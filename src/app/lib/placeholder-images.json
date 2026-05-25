@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-bg",
+      "description": "Abstract industrial technology background",
+      "imageUrl": "https://picsum.photos/seed/rfid1/1920/1080",
+      "imageHint": "technology abstract"
+    },
+    {
+      "id": "student-profile",
+      "description": "Student profile placeholder",
+      "imageUrl": "https://picsum.photos/seed/student/200/200",
+      "imageHint": "person profile"
+    },
+    {
+      "id": "classroom-view",
+      "description": "Classroom view for P2Net counting",
+      "imageUrl": "https://picsum.photos/seed/classroom/800/600",
+      "imageHint": "classroom college"
+    }
+  ]
+}
