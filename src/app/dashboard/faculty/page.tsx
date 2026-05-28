@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -15,6 +16,7 @@ export default function FacultyDashboard() {
   const [aiCount, setAiCount] = useState(0)
   const [timeLeft, setTimeLeft] = useState(2400) // 40 minutes in seconds
   const [isCameraActive, setIsCameraActive] = useState(false)
+  const [stream, setStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -25,13 +27,18 @@ export default function FacultyDashboard() {
     return () => clearInterval(timer)
   }, [])
 
+  // Handle stream attachment when video element mounts
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream
+    }
+  }, [isCameraActive, stream])
+
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        setIsCameraActive(true)
-      }
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
+      setStream(mediaStream)
+      setIsCameraActive(true)
     } catch (err) {
       toast({
         variant: "destructive",
@@ -116,7 +123,7 @@ export default function FacultyDashboard() {
                </div>
              ) : (
                <>
-                 <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                 <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                  <canvas ref={canvasRef} width="640" height="480" className="hidden" />
                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
                  <div className="absolute top-4 left-4 p-2 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[9px] font-mono text-emerald-500 uppercase">

@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Camera, Laptop, Usb, Smartphone, Radio, Settings2, RefreshCw, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,20 +24,26 @@ export default function AdminCamera() {
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [isInferenceActive, setIsInferenceActive] = useState(false)
   const [lastCount, setLastCount] = useState<number | null>(null)
+  const [stream, setStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
+  // Ensure stream is attached when the video element becomes available in the DOM
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream
+    }
+  }, [isCameraActive, stream])
+
   const startNode = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        setIsCameraActive(true)
-        toast({
-          title: "VISION_NODE_INITIALIZED",
-          description: "Hardware capture stream established.",
-        })
-      }
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
+      setStream(mediaStream)
+      setIsCameraActive(true)
+      toast({
+        title: "VISION_NODE_INITIALIZED",
+        description: "Hardware capture stream established.",
+      })
     } catch (err) {
       toast({
         variant: "destructive",
@@ -169,7 +176,7 @@ export default function AdminCamera() {
               </div>
             ) : (
               <>
-                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                 <canvas ref={canvasRef} width="640" height="480" className="hidden" />
                 <div className="absolute inset-0 bg-black/20 pointer-events-none" />
                 {isInferenceActive && (
