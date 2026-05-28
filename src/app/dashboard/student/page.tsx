@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StudentAttendance } from "@/components/dashboard/student-attendance"
@@ -10,20 +10,35 @@ import { SurveyView } from "@/components/dashboard/survey-view"
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState("attendance")
+  
+  // Simulated student identity for the terminal
+  const [studentInfo, setStudentInfo] = useState({
+    nodeId: "S-2023-PRC-CA003",
+    semester: "SEM_3",
+    name: "Abhijith PRC"
+  })
+
+  // In a real app, this would come from a user context
+  // Here we just ensure it's set correctly on mount to avoid hydration mismatch
+  useEffect(() => {
+    // Logic to potentially vary identity based on login can go here
+  }, [])
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-headline font-bold tracking-tight">Student Terminal</h1>
-          <p className="text-muted-foreground uppercase text-[10px] font-mono tracking-widest">Node: S-2023-PRC-CA003 | ACTIVE_SESSION</p>
+          <p className="text-muted-foreground uppercase text-[10px] font-mono tracking-widest">
+            Node: {studentInfo.nodeId} | ACTIVE_SESSION | {studentInfo.name.toUpperCase()}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-mono">
             RFID_CONNECTED
           </Badge>
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono uppercase">
-            SEM_3
+            {studentInfo.semester}
           </Badge>
         </div>
       </div>

@@ -20,9 +20,42 @@ export default function AdminStudents() {
   const [search, setSearch] = useState("")
   
   const students = [
-    { id: "1", name: "Abhijith PRC", roll: "CSE23CA003", email: "abhijith.prc23ca003@student.providence.edu.in", dept: "CSE", sem: "3", status: "ACTIVE" },
-    { id: "2", name: "Sarah Miller", roll: "AI24CA012", email: "sarah.m24ca012@student.providence.edu.in", dept: "AI", sem: "1", status: "ACTIVE" },
-    { id: "3", name: "Leo Das", roll: "CY23CA045", email: "leo.d23ca045@student.providence.edu.in", dept: "CY", sem: "3", status: "LEAVE" },
+    { 
+      id: "1", 
+      name: "Abhijith PRC", 
+      roll: "CSE23CA003", 
+      email: "abhijith.prc23ca003@student.providence.edu.in", 
+      dept: "CSE", 
+      sem: "3", 
+      status: "ACTIVE" 
+    },
+    { 
+      id: "2", 
+      name: "Sarah Miller", 
+      roll: "AI24CA012", 
+      email: "sarah.m24ca012@student.providence.edu.in", 
+      dept: "AI", 
+      sem: "1", 
+      status: "ACTIVE" 
+    },
+    { 
+      id: "3", 
+      name: "Leo Das", 
+      roll: "CY22CA045", 
+      email: "leo.d22ca045@student.providence.edu.in", 
+      dept: "CY", 
+      sem: "5", 
+      status: "LEAVE" 
+    },
+    { 
+      id: "4", 
+      name: "Emma Watson", 
+      roll: "ECE21CA089", 
+      email: "emma.w21ca089@student.providence.edu.in", 
+      dept: "ECE", 
+      sem: "7", 
+      status: "ACTIVE" 
+    }
   ]
 
   const filtered = students.filter(s => 
@@ -87,7 +120,7 @@ export default function AdminStudents() {
                         <Badge variant="outline" className="text-[9px] uppercase font-mono tracking-tighter border-white/5">{student.dept}</Badge>
                         <Badge variant="outline" className="text-[9px] uppercase font-mono tracking-tighter border-white/5">SEM {student.sem}</Badge>
                       </div>
-                      <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">{student.email}</span>
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono">{student.email}</span>
                     </div>
                   </TableCell>
                   <TableCell>
