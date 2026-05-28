@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { 
   Sidebar, 
   SidebarProvider, 
@@ -12,24 +12,66 @@ import {
 } from "@/components/ui/sidebar"
 import { NavMain } from "@/components/dashboard/nav-main"
 import { Input } from "@/components/ui/input"
-import { Search, Bell, Settings, User, LogOut } from "lucide-react"
+import { Search, Bell, Settings, User, LogOut, ShieldAlert, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Demo role state - in a real app, this would come from an auth hook
+  // Demo state - in production this comes from useUser()
   const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student' | 'advisor'>('admin')
+  const [isApproved, setIsApproved] = useState(true)
   const router = useRouter()
 
   const handleRoleChange = (newRole: string) => {
-    setRole(newRole as any)
-    const route = newRole === 'admin' ? 'admin' : newRole
+    const r = newRole as any
+    setRole(r)
+    // For demo: non-students registration needs approval
+    setIsApproved(r === 'student' || r === 'admin') 
+    const route = r === 'admin' ? 'admin' : r
     router.push(`/dashboard/${route}`)
+  }
+
+  // If not approved, show the pending screen instead of sidebar layout
+  if (!isApproved) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
+          <div className="flex justify-center">
+            <div className="h-24 w-24 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <ShieldAlert className="h-12 w-12 text-amber-500" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-headline font-bold">Access Restricted</h2>
+            <p className="text-muted-foreground">
+              Your <span className="text-primary font-bold uppercase">{role}</span> node is currently awaiting manual approval.
+            </p>
+          </div>
+          <div className="p-4 bg-secondary/30 border border-sidebar-border rounded-lg text-sm text-left font-mono">
+            <p className="text-muted-foreground uppercase text-[10px] mb-2 tracking-widest">System Status:</p>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>PENDING_VALIDATION_NODE_ID: {Math.random().toString(36).substring(7).toUpperCase()}</span>
+            </div>
+          </div>
+          <Button variant="outline" className="w-full" asChild>
+            <Link href="/auth/login">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              RETURN TO LOGIN
+            </Link>
+          </Button>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">
+            Contact your department HOD or system administrator to expedite the verification process.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight, Loader2 } from "lucide-react"
+import { ArrowRight, Loader2, Info } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const departments = ["CSE", "ECE", "ME", "CE", "EEE"]
 
@@ -64,31 +65,65 @@ export default function RegisterPage() {
 
   function onSubmit(values: any) {
     setIsLoading(true)
-    console.log("Registering as:", role, values)
+    // Simulate user creation with isApproved logic
+    const userData = {
+      ...values,
+      role,
+      isApproved: role === "student", // Students are auto-approved
+    }
+    
+    console.log("Saving user:", userData)
+    
     setTimeout(() => {
       setIsLoading(false)
+      // If student, go to login. If others, explain approval
       router.push("/auth/login")
     }, 2000)
   }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
-      <Card className="w-full max-w-2xl bg-card/50 backdrop-blur-sm border-sidebar-border">
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(88,101,242,0.05),transparent)] pointer-events-none" />
+      
+      <Card className="w-full max-w-2xl bg-card/50 backdrop-blur-sm border-sidebar-border relative z-10">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
             <Logo size="md" />
           </div>
           <CardTitle className="text-2xl font-headline">Registration Terminal</CardTitle>
-          <CardDescription>Configure your node in the Edugo network.</CardDescription>
+          <CardDescription>Configure your credentials for the Edugo network.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="student" onValueChange={(v) => setRole(v as any)}>
+          <Tabs defaultValue="student" onValueChange={(v) => {
+            setRole(v as any)
+            form.reset()
+          }}>
             <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary h-auto py-1">
               <TabsTrigger value="student" className="text-[10px] sm:text-xs">STUDENT</TabsTrigger>
               <TabsTrigger value="faculty" className="text-[10px] sm:text-xs">FACULTY</TabsTrigger>
               <TabsTrigger value="advisor" className="text-[10px] sm:text-xs">ADVISOR</TabsTrigger>
               <TabsTrigger value="hod" className="text-[10px] sm:text-xs">HOD</TabsTrigger>
             </TabsList>
+
+            <div className="mb-6">
+              {role === "student" ? (
+                <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">Auto-Approval Active</AlertTitle>
+                  <AlertDescription className="text-[10px]">
+                    Student accounts are granted immediate access to the dashboard after registration.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-500">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">Approval Required</AlertTitle>
+                  <AlertDescription className="text-[10px]">
+                    Your account will require manual approval from the {role === 'hod' ? 'Admin' : 'HOD'} before console access is granted.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
 
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -126,7 +161,7 @@ export default function RegisterPage() {
                 {role === "student" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="rollNumber" render={({ field }) => (
-                      <FormItem><FormLabel>Roll Number</FormLabel><FormControl><Input {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Roll Number</FormLabel><FormControl><Input {...field} placeholder="e.g. CSE-23-01" className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="semester" render={({ field }) => (
                       <FormItem>
@@ -158,8 +193,8 @@ export default function RegisterPage() {
                   )} />
                 )}
 
-                <Button type="submit" className="w-full h-11 font-bold group" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="animate-spin" /> : <>REGISTER FOR APPROVAL <ArrowRight className="ml-2 h-4 w-4" /></>}
+                <Button type="submit" className="w-full h-11 font-bold group mt-6" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="animate-spin" /> : <>REGISTER ACCOUNT <ArrowRight className="ml-2 h-4 w-4" /></>}
                 </Button>
               </form>
             </Form>
