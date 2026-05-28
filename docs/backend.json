@@ -3,19 +3,23 @@
   "entities": {
     "UserProfile": {
       "title": "User Profile",
-      "description": "Extended profile information for students and faculty.",
+      "description": "Comprehensive profile for all Edugo users with role-based attributes and approval status.",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
         "fullName": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "department": { "type": "string" },
-        "semester": { "type": "string" },
-        "collegeName": { "type": "string" },
         "role": { "type": "string", "enum": ["student", "faculty", "hod", "admin"] },
+        "department": { "type": "string", "enum": ["CSE", "ECE", "ME", "CE", "EEE"] },
+        "isApproved": { "type": "boolean" },
+        "collegeName": { "type": "string" },
+        "rollNumber": { "type": "string", "description": "Student only" },
+        "semester": { "type": "string", "description": "Student only" },
+        "subject": { "type": "string", "description": "Faculty only" },
+        "designation": { "type": "string", "description": "HOD only" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["uid", "fullName", "email", "department", "collegeName"]
+      "required": ["uid", "fullName", "email", "role", "department"]
     },
     "AttendanceLog": {
       "title": "Attendance Log",
@@ -23,23 +27,39 @@
       "type": "object",
       "properties": {
         "studentId": { "type": "string" },
+        "subjectId": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" },
-        "method": { "type": "string", "enum": ["rfid", "p2net"] },
-        "status": { "type": "string", "enum": ["present", "late"] }
+        "method": { "type": "string", "enum": ["rfid", "p2net", "manual"] },
+        "status": { "type": "string", "enum": ["present", "absent", "late"] },
+        "markedBy": { "type": "string", "description": "UID of faculty who marked manually, or 'system'" }
+      }
+    },
+    "Department": {
+      "title": "Department",
+      "description": "Academic department metadata.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "hodUid": { "type": "string" }
       }
     }
   },
   "auth": {
-    "providers": ["google", "password"]
+    "providers": ["password"]
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
-      "description": "User profile data stored by UID."
+      "description": "User profiles and approval state."
     },
     "/attendance/{logId}": {
       "schema": "AttendanceLog",
       "description": "Global attendance records."
+    },
+    "/departments/{deptId}": {
+      "schema": "Department",
+      "description": "Department definitions and HOD mapping."
     }
   }
 }

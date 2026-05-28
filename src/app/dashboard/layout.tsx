@@ -12,16 +12,24 @@ import {
 } from "@/components/ui/sidebar"
 import { NavMain } from "@/components/dashboard/nav-main"
 import { Input } from "@/components/ui/input"
-import { Search, Bell, Settings, User } from "lucide-react"
+import { Search, Bell, Settings, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
+import { useRouter } from "next/navigation"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Demo role state - in a real app, this would come from an auth hook
   const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student'>('admin')
+  const router = useRouter()
+
+  const handleRoleChange = (newRole: string) => {
+    setRole(newRole as any)
+    router.push(`/dashboard/${newRole === 'admin' ? 'admin' : newRole}`)
+  }
 
   return (
     <SidebarProvider defaultOpen>
@@ -40,8 +48,10 @@ export default function DashboardLayout({
                 <User className="h-5 w-5 text-accent" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-semibold truncate">System Admin</p>
-                <p className="text-xs text-muted-foreground truncate uppercase font-mono tracking-tighter">ADMIN1-ROOT</p>
+                <p className="text-sm font-semibold truncate uppercase">Root System</p>
+                <p className="text-xs text-muted-foreground truncate uppercase font-mono tracking-tighter">
+                  {role}-NODE-01
+                </p>
               </div>
             </div>
           </SidebarFooter>
@@ -55,7 +65,7 @@ export default function DashboardLayout({
               <div className="relative w-full max-w-md hidden md:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Search students, roll numbers, or logs..." 
+                  placeholder="Query system logs or students..." 
                   className="pl-10 bg-secondary/50 border-none focus-visible:ring-1 focus-visible:ring-primary h-9"
                 />
               </div>
@@ -63,11 +73,11 @@ export default function DashboardLayout({
 
             <div className="flex items-center gap-4">
               <div className="hidden lg:flex items-center gap-2 mr-4">
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Active Role:</span>
+                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Auth Level:</span>
                 <select 
                   className="bg-transparent text-xs font-bold text-primary uppercase cursor-pointer focus:outline-none"
                   value={role}
-                  onChange={(e) => setRole(e.target.value as any)}
+                  onChange={(e) => handleRoleChange(e.target.value)}
                 >
                   <option value="admin">Admin</option>
                   <option value="hod">HOD</option>

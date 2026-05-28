@@ -9,13 +9,14 @@ import {
   Calendar, 
   Camera, 
   FileSpreadsheet, 
-  Bell, 
   Shield, 
   MessageSquare,
   Building2,
-  BookOpen,
   ClipboardCheck,
-  LogOut
+  LogOut,
+  UserCheck,
+  Activity,
+  History
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -42,30 +43,32 @@ export function NavMain({ role }: NavMainProps) {
 
   const navGroups: Record<string, NavItem[]> = {
     admin: [
-      { title: "Dashboard", url: "/dashboard/admin", icon: LayoutDashboard },
+      { title: "System Health", url: "/dashboard/admin", icon: Activity },
+      { title: "HOD Approvals", url: "/dashboard/admin/approvals", icon: UserCheck },
       { title: "Departments", url: "/dashboard/admin/departments", icon: Building2 },
-      { title: "HOD Management", url: "/dashboard/admin/hods", icon: Users },
-      { title: "Camera Settings", url: "/dashboard/admin/camera", icon: Camera },
-      { title: "System Logs", url: "/dashboard/admin/logs", icon: Shield },
+      { title: "Global Logs", url: "/dashboard/admin/logs", icon: Shield },
+      { title: "Infrastructure", url: "/dashboard/admin/camera", icon: Camera },
     ],
     hod: [
-      { title: "Live Dashboard", url: "/dashboard/hod", icon: LayoutDashboard },
-      { title: "Timetable", url: "/dashboard/hod/timetable", icon: Calendar },
-      { title: "Faculty", url: "/dashboard/hod/faculty", icon: Users },
-      { title: "Attendance Stats", url: "/dashboard/hod/attendance", icon: ClipboardCheck },
-      { title: "Leave Requests", url: "/dashboard/hod/leaves", icon: FileSpreadsheet },
+      { title: "Dept Dashboard", url: "/dashboard/hod", icon: LayoutDashboard },
+      { title: "Faculty Approvals", url: "/dashboard/hod/approvals", icon: UserCheck },
+      { title: "Timetable Editor", url: "/dashboard/hod/timetable", icon: Calendar },
+      { title: "Subject Mapping", url: "/dashboard/hod/mapping", icon: Building2 },
+      { title: "Messages", url: "/dashboard/hod/messages", icon: MessageSquare },
+      { title: "All Attendance", url: "/dashboard/hod/attendance", icon: ClipboardCheck },
     ],
     faculty: [
-      { title: "Active Session", url: "/dashboard/faculty", icon: LayoutDashboard },
-      { title: "My Timetable", url: "/dashboard/faculty/timetable", icon: Calendar },
+      { title: "Active Session", url: "/dashboard/faculty", icon: Activity },
       { title: "Quick Attendance", url: "/dashboard/faculty/attendance", icon: ClipboardCheck },
-      { title: "Messages", url: "/dashboard/faculty/messages", icon: MessageSquare },
+      { title: "My Timetable", url: "/dashboard/faculty/timetable", icon: Calendar },
+      { title: "Student History", url: "/dashboard/faculty/history", icon: History },
+      { title: "Reports", url: "/dashboard/faculty/reports", icon: FileSpreadsheet },
     ],
     student: [
-      { title: "Home", url: "/dashboard/student", icon: LayoutDashboard },
-      { title: "Attendance History", url: "/dashboard/student/attendance", icon: ClipboardCheck },
-      { title: "Apply Leave", url: "/dashboard/student/leave", icon: FileSpreadsheet },
+      { title: "My Attendance", url: "/dashboard/student", icon: LayoutDashboard },
+      { title: "Subject Wise", url: "/dashboard/student/subjects", icon: ClipboardCheck },
       { title: "Timetable", url: "/dashboard/student/timetable", icon: Calendar },
+      { title: "Notifications", url: "/dashboard/student/notifications", icon: MessageSquare },
     ]
   }
 
@@ -75,7 +78,7 @@ export function NavMain({ role }: NavMainProps) {
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupLabel className="px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
-          Navigation
+          Terminal Access
         </SidebarGroupLabel>
         <SidebarMenu>
           {items.map((item) => (
@@ -97,7 +100,7 @@ export function NavMain({ role }: NavMainProps) {
             <SidebarMenuButton asChild className="text-destructive hover:text-destructive hover:bg-destructive/10">
               <Link href="/auth/login">
                 <LogOut className="h-4 w-4" />
-                <span>Logout</span>
+                <span>Terminate Session</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
