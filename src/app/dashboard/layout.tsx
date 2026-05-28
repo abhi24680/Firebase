@@ -23,21 +23,24 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Demo state - in production this comes from useUser()
   const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student' | 'advisor'>('admin')
   const [isApproved, setIsApproved] = useState(true)
+  const [nodeId, setNodeId] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    // Set random node ID only on client to avoid hydration mismatch
+    setNodeId(Math.random().toString(36).substring(7).toUpperCase())
+  }, [])
 
   const handleRoleChange = (newRole: string) => {
     const r = newRole as any
     setRole(r)
-    // For demo: non-students registration needs approval
     setIsApproved(r === 'student' || r === 'admin') 
     const route = r === 'admin' ? 'admin' : r
     router.push(`/dashboard/${route}`)
   }
 
-  // If not approved, show the pending screen instead of sidebar layout
   if (!isApproved) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -57,7 +60,7 @@ export default function DashboardLayout({
             <p className="text-muted-foreground uppercase text-[10px] mb-2 tracking-widest">System Status:</p>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>PENDING_VALIDATION_NODE_ID: {Math.random().toString(36).substring(7).toUpperCase()}</span>
+              <span>PENDING_VALIDATION_NODE_ID: {nodeId || "INITIALIZING..."}</span>
             </div>
           </div>
           <Button variant="outline" className="w-full" asChild>
