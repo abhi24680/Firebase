@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { analyzeCrowd } from "@/ai/flows/analyze-crowd-flow"
 import { toast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 export default function AdminDashboard() {
   const [isCameraActive, setIsCameraActive] = useState(false)
@@ -29,12 +30,11 @@ export default function AdminDashboard() {
     { label: "Active RFID", value: "4 Nodes", icon: ShieldCheck, color: "text-purple-500", status: "Connected" },
   ])
 
-  // Sync video stream
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream
     }
-  }, [stream])
+  }, [stream, isCameraActive])
 
   const runGlobalInference = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current || isInferenceActive) return
@@ -48,7 +48,6 @@ export default function AdminDashboard() {
       try {
         const result = await analyzeCrowd({ imageBuffer: dataUrl })
         setAiDetectedCount(result.count)
-        // Update GPU metric status
         setMetrics(prev => prev.map(m => 
           m.label === "GPU Load" ? { ...m, value: "88%", status: "Inference Active" } : m
         ))
@@ -57,22 +56,28 @@ export default function AdminDashboard() {
             m.label === "GPU Load" ? { ...m, value: "12%", status: "Idle" } : m
           ))
         }, 2000)
-      } catch (error) {
+      } catch (error: any) {
         console.error("Inference Error:", error)
+        toast({
+          variant: "destructive",
+          title: "INFERENCE_ERROR",
+          description: error.message || "Failed to process P2Net vision data.",
+        })
       } finally {
         setIsInferenceActive(false)
       }
     }
   }, [isInferenceActive])
 
-  // Auto-inference loop
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (isCameraActive) {
       runGlobalInference()
       interval = setInterval(runGlobalInference, 10000)
     }
-    return () => clearInterval(interval)
+    return () => {
+      if (interval) clearInterval(interval)
+    }
   }, [isCameraActive, runGlobalInference])
 
   const startGlobalNode = async () => {
@@ -150,7 +155,6 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="absolute inset-0 flex">
-                  {/* Camera Preview */}
                   <div className="w-1/2 h-full relative border-r border-white/5 bg-black">
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover opacity-60" />
                     <canvas ref={canvasRef} width="640" height="480" className="hidden" />
@@ -162,7 +166,6 @@ export default function AdminDashboard() {
                     )}
                   </div>
                   
-                  {/* Census Numbers */}
                   <div className="w-1/2 h-full p-8 flex flex-col justify-center bg-black/60 backdrop-blur-md">
                     <div className="space-y-10">
                       <div className="space-y-2 group">
@@ -215,49 +218,6 @@ export default function AdminDashboard() {
           </Card>
 
           <AttendanceStats />
-          
-          <Card className="bg-sidebar/30 border-sidebar-border">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Inference Node Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg border border-sidebar-border group hover:border-primary/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded bg-background flex items-center justify-center overflow-hidden border border-sidebar-border">
-                      <Camera className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">Node-01: Main Lecture Hall</p>
-                      <p className="text-xs text-muted-foreground font-mono">PRC-LH-301 | P2Net Enabled</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 mb-1">ONLINE</Badge>
-                    <p className="text-[10px] text-muted-foreground font-mono">COUNT: {aiDetectedCount || 0}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg border border-sidebar-border group hover:border-primary/50 transition-colors opacity-70">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded bg-background flex items-center justify-center overflow-hidden border border-sidebar-border">
-                      <Camera className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">Node-03: IT Lab 2</p>
-                      <p className="text-xs text-muted-foreground font-mono">PRC-LB-202 | P2Net Enabled</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 mb-1">ONLINE</Badge>
-                    <p className="text-[10px] text-muted-foreground font-mono">COUNT: {Math.floor(rfidCount * 0.08)}</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="xl:col-span-1">
@@ -266,8 +226,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   )
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ')
 }
