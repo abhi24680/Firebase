@@ -35,6 +35,22 @@
         "markedBy": { "type": "string", "description": "UID of faculty who marked manually, or 'system'" }
       }
     },
+    "LeaveRequest": {
+      "title": "Leave Request",
+      "description": "Student leave application submitted to HOD and Faculty Advisor.",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "department": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "reviewedBy": { "type": "string", "description": "UID of the HOD who reviewed the request" }
+      }
+    },
     "Department": {
       "title": "Department",
       "description": "Academic department metadata.",
@@ -57,6 +73,10 @@
     "/attendance/{logId}": {
       "schema": "AttendanceLog",
       "description": "Global attendance records."
+    },
+    "/leave_requests/{requestId}": {
+      "schema": "LeaveRequest",
+      "description": "Leave applications for faculty/HOD review."
     },
     "/departments/{deptId}": {
       "schema": "Department",
