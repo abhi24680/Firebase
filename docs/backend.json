@@ -1,0 +1,45 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Extended profile information for students and faculty.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "department": { "type": "string" },
+        "semester": { "type": "string" },
+        "collegeName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "faculty", "hod", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "email", "department", "collegeName"]
+    },
+    "AttendanceLog": {
+      "title": "Attendance Log",
+      "description": "Records of RFID or AI-based attendance marks.",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "method": { "type": "string", "enum": ["rfid", "p2net"] },
+        "status": { "type": "string", "enum": ["present", "late"] }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data stored by UID."
+    },
+    "/attendance/{logId}": {
+      "schema": "AttendanceLog",
+      "description": "Global attendance records."
+    }
+  }
+}

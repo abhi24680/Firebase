@@ -17,10 +17,12 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-4">
             <Button variant="ghost" asChild>
-              <Link href="/dashboard">Access Console</Link>
+              <Link href="/auth/login">Access Console</Link>
             </Button>
-            <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-none skew-x-[-10deg]">
-              <span className="skew-x-[10deg]">LOGIN</span>
+            <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-none skew-x-[-10deg]" asChild>
+              <Link href="/auth/login">
+                <span className="skew-x-[10deg]">LOGIN</span>
+              </Link>
             </Button>
           </div>
         </div>
@@ -46,7 +48,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Button size="lg" className="h-14 px-8 text-lg font-bold min-w-[200px]" asChild>
-                <Link href="/dashboard">Enter Terminal</Link>
+                <Link href="/auth/login">Enter Terminal</Link>
               </Button>
               <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold border-border/50 hover:bg-white/5 min-w-[200px]">
                 Documentation
