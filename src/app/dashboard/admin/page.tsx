@@ -166,46 +166,46 @@ export default function AdminDashboard() {
                   <div className="w-1/2 h-full p-8 flex flex-col justify-center bg-black/60 backdrop-blur-md">
                     <div className="space-y-10">
                       <div className="space-y-2 group">
-                        <p className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
+                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
                           <Users className="h-3 w-3 text-primary" /> Global Occupancy (AI)
-                        </p>
+                        </div>
                         <p className="text-6xl font-headline font-bold text-primary tracking-tighter animate-in fade-in slide-in-from-left-4">
                           {aiDetectedCount || '--'}
                         </p>
-                        <p className="text-[10px] text-emerald-500 font-mono flex items-center gap-2">
+                        <div className="text-[10px] text-emerald-500 font-mono flex items-center gap-2">
                           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           P2Net Node Sync Active
-                        </p>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
+                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
                           <ShieldCheck className="h-3 w-3" /> Verified RFID Tags
-                        </p>
+                        </div>
                         <p className="text-6xl font-headline font-bold text-white tracking-tighter">
                           {rfidCount}
                         </p>
-                        <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest opacity-50">
+                        <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest opacity-50">
                           Serial Scan Log: ACTIVE
-                        </p>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
+                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
                           <Activity className="h-3 w-3 text-accent" /> Proxy Alerts
-                        </p>
+                        </div>
                         <p className={cn(
                           "text-6xl font-headline font-bold tracking-tighter transition-colors",
                           Math.abs(aiDetectedCount - rfidCount) > 2 ? "text-accent" : "text-emerald-500"
                         )}>
                           {aiDetectedCount > 0 ? Math.abs(aiDetectedCount - rfidCount) : '--'}
                         </p>
-                        <p className={cn(
+                        <div className={cn(
                           "text-[10px] font-mono uppercase",
                           aiDetectedCount > rfidCount ? "text-accent" : "text-emerald-500"
                         )}>
                           {aiDetectedCount > rfidCount ? "Potential Proxy Detected" : "Data Synchronized"}
-                        </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -271,4 +271,3 @@ export default function AdminDashboard() {
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(' ')
 }
-
