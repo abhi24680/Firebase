@@ -78,7 +78,7 @@ export function LeaveRequestForm() {
                       <Input type="date" {...field} className="bg-secondary/50 border-white/5 font-mono" />
                     </FormControl>
                     <FormMessage className="text-[10px]" />
-                  </FormItem>
+                  </TableHead>
                 )}
               />
             </div>
