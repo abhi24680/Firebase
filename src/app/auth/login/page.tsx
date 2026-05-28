@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -23,7 +22,7 @@ import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 
 const loginSchema = z.object({
-  email: z.string().min(1, "Username or Email required"),
+  email: z.string().min(1, "ID or Email required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
@@ -49,7 +48,8 @@ export default function LoginPage() {
     setIsLoading(true)
     
     // Testing Phase Hardcoded Admin Credentials
-    if (values.email === "admin1" && values.password === "admin@123") {
+    const isAdmin = values.email === "admin1" || values.email === "admin.003@providence.edu.in";
+    if (isAdmin && values.password === "admin@123") {
       setTimeout(() => {
         setIsLoading(false)
         router.push("/dashboard/admin")
@@ -64,7 +64,7 @@ export default function LoginPage() {
     // Standard Academic Auth
     setTimeout(() => {
       setIsLoading(false)
-      if (values.email.includes("student")) {
+      if (values.email.endsWith("student.providence.edu.in")) {
         router.push("/dashboard/student")
       } else {
         router.push("/dashboard")
@@ -101,7 +101,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">ID / College Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="admin1 or name@student.providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
+                      <Input placeholder="admin.003@providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
                     </FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
