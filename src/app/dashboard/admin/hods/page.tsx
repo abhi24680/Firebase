@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { UserCheck, ShieldAlert, UserPlus, UserMinus, Briefcase, Search, Filter } from "lucide-react"
+import { UserCheck, ShieldAlert, UserPlus, UserMinus, Briefcase, Search, Filter, ShieldCheck, Mail, Building2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +32,7 @@ export default function AdminHODs() {
 
   const [activeHods, setActiveHods] = useState([
     { id: "hod-1", name: "Dr. Alan Turing", dept: "Computer Science", email: "turing.a@providence.edu.in" },
+    { id: "hod-2", name: "Dr. Grace Hopper", dept: "AI", email: "hopper.g@providence.edu.in" },
   ])
 
   const handleApprove = (reqId: string) => {
@@ -59,12 +60,12 @@ export default function AdminHODs() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-headline font-bold tracking-tight uppercase">Administrative Node Management (HOD)</h1>
+          <h1 className="text-3xl font-headline font-bold tracking-tight uppercase">Admin Node Management</h1>
           <p className="text-muted-foreground uppercase text-[10px] font-mono tracking-widest">Process HOD authorization requests and manage department leadership.</p>
         </div>
-        <Button className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all">
+        <Button className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all rounded-none font-bold uppercase tracking-tighter">
           <UserPlus className="mr-2 h-4 w-4" />
-          DIRECT NODE ADDITION
+          MANUAL_NODE_OVERRIDE
         </Button>
       </div>
 
@@ -85,12 +86,16 @@ export default function AdminHODs() {
             <div className="divide-y divide-white/5">
               {requests.map((req) => (
                 <div key={req.id} className="p-6 space-y-4 hover:bg-white/5 transition-colors">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-1">
                     <span className="font-bold text-sm uppercase text-foreground">{req.name}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono truncate">{req.email}</span>
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+                      <Mail className="h-3 w-3" /> {req.email}
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase font-mono">{req.dept}</Badge>
+                    <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase font-mono">
+                      <Building2 className="h-3 w-3 mr-1" /> {req.dept}
+                    </Badge>
                     <div className="flex gap-2">
                       <Button size="sm" variant="ghost" className="h-7 text-[10px] text-destructive hover:bg-destructive/10 uppercase font-bold" onClick={() => setRequests(requests.filter(r => r.id !== req.id))}>Deny</Button>
                       <Button size="sm" className="h-7 text-[10px] bg-primary uppercase font-bold" onClick={() => handleApprove(req.id)}>Authorize</Button>
@@ -107,17 +112,17 @@ export default function AdminHODs() {
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-2 bg-sidebar/30 border-sidebar-border">
+        <Card className="xl:col-span-2 bg-sidebar/30 border-sidebar-border overflow-hidden">
           <CardHeader className="border-b border-white/5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-primary" />
+                <ShieldCheck className="h-4 w-4 text-primary" />
                 <CardTitle className="text-sm font-semibold uppercase tracking-wider">Authorized HOD Roster</CardTitle>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                  <Input placeholder="Search nodes..." className="pl-8 h-8 text-[10px] bg-secondary/50 border-white/5 w-[200px]" />
+                  <Input placeholder="Query nodes..." className="pl-8 h-8 text-[10px] bg-secondary/50 border-white/5 w-[200px]" />
                 </div>
                 <Button variant="outline" size="icon" className="h-8 w-8 border-white/5">
                   <Filter className="h-3.5 w-3.5" />
@@ -131,7 +136,7 @@ export default function AdminHODs() {
                 <TableRow className="border-white/5">
                   <TableHead className="text-[10px] uppercase font-bold pl-6">HOD Node Identity</TableHead>
                   <TableHead className="text-[10px] uppercase font-bold">Academic Cluster</TableHead>
-                  <TableHead className="text-[10px] uppercase font-bold text-right pr-6">Terminal Management</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold text-right pr-6">Management</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -140,20 +145,13 @@ export default function AdminHODs() {
                     <TableCell className="pl-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold uppercase tracking-tight">{hod.name}</span>
-                        <span className="text-[10px] text-muted-foreground font-mono">{hod.email}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono uppercase opacity-50 tracking-tighter">{hod.email}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Select defaultValue={hod.dept}>
-                        <SelectTrigger className="w-[180px] h-8 text-[10px] bg-secondary/30 border-white/5 font-mono uppercase">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-popover border-sidebar-border">
-                          <SelectItem value="Computer Science" className="text-[10px] uppercase font-mono">CSE</SelectItem>
-                          <SelectItem value="Artificial Intelligence" className="text-[10px] uppercase font-mono">AI</SelectItem>
-                          <SelectItem value="Cyber Security" className="text-[10px] uppercase font-mono">CY</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Badge variant="outline" className="text-[10px] bg-secondary border-white/5 uppercase font-mono">
+                        {hod.dept}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right pr-6">
                       <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 text-destructive" onClick={() => handleDecommission(hod.id)}>

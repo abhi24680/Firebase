@@ -13,16 +13,16 @@ import {
   TrendingUp,
   Network,
   Server,
-  Zap,
-  HardDrive,
   RefreshCw,
-  Clock
+  Clock,
+  HardDrive
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { LiveScanLog } from "@/components/dashboard/live-scan-log"
 import { AttendanceStats } from "@/components/dashboard/attendance-stats"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export default function AdminDashboard() {
@@ -35,7 +35,6 @@ export default function AdminDashboard() {
 
   const [meshStatus, setMeshStatus] = useState("OPTIMAL")
 
-  // Simulation of live telemetry
   useEffect(() => {
     const interval = setInterval(() => {
       setCensus(prev => ({
@@ -59,7 +58,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-headline font-bold tracking-tight uppercase text-glow">Infrastructure Command</h1>
@@ -79,7 +77,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Primary Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric) => (
           <Card key={metric.label} className="bg-sidebar/30 border-sidebar-border overflow-hidden group hover:neon-border transition-all">
@@ -102,11 +99,8 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Main Analysis Section */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 space-y-8">
-          
-          {/* Class Count / Census Node */}
           <Card className="bg-sidebar/30 border-sidebar-border overflow-hidden border-primary/10 relative">
             <div className="absolute top-0 right-0 p-8 opacity-5">
               <Network className="h-64 w-64" />
@@ -116,7 +110,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-sm font-semibold uppercase tracking-wider">Synchronous Census Node</CardTitle>
+                  <CardTitle className="text-sm font-semibold uppercase tracking-wider">Class Count (System Census)</CardTitle>
                 </div>
                 <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-mono text-[9px]">
                   LIVE_DATAFEED_PRC
@@ -190,13 +184,6 @@ export default function AdminDashboard() {
                       </div>
                       <Progress value={42} className="h-1 bg-white/5" />
                    </div>
-                   <div className="space-y-3">
-                      <div className="flex items-center justify-between text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
-                        <span>Node Retention</span>
-                        <span>100%</span>
-                      </div>
-                      <Progress value={100} className="h-1 bg-white/5" />
-                   </div>
                    
                    <div className="pt-6 flex flex-col gap-3">
                       <div className="flex items-center gap-2 text-[10px] font-mono text-emerald-500 uppercase">
@@ -213,41 +200,15 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Institutional Trends */}
           <div className="h-[400px]">
             <AttendanceStats />
           </div>
         </div>
 
-        {/* Right Sidebar: Activity Feed */}
         <div className="xl:col-span-1 h-full">
           <LiveScanLog />
         </div>
       </div>
     </div>
-  )
-}
-
-function Button({ children, className, variant, size, ...props }: any) {
-  const variants: any = {
-    outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-    ghost: "hover:bg-accent hover:text-accent-foreground",
-  }
-  const sizes: any = {
-    icon: "h-10 w-10 p-0",
-    default: "h-10 px-4 py-2",
-  }
-  return (
-    <button 
-      className={cn(
-        "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        variants[variant || 'outline'],
-        sizes[size || 'default'],
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </button>
   )
 }
