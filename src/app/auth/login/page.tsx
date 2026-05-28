@@ -23,8 +23,8 @@ import Link from "next/link"
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email").refine(
-    (val) => val.endsWith("@college.edu"),
-    "Only @college.edu emails are allowed"
+    (val) => val.endsWith("providence.edu.in"),
+    "Only @providence.edu.in emails are allowed"
   ),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
@@ -77,7 +77,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">College Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@college.edu" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
+                      <Input placeholder="name@student.providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
                     </FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>

@@ -34,7 +34,7 @@ const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Required"),
-  email: z.string().email().refine(v => v.endsWith("@college.edu"), "Use @college.edu email"),
+  email: z.string().email().refine(v => v.endsWith("providence.edu.in"), "Use @providence.edu.in email"),
   password: z.string().min(6, "At least 6 characters"),
   confirmPassword: z.string().min(6, "At least 6 characters"),
   department: z.string().min(1, "Select department"),
@@ -144,7 +144,7 @@ export default function RegisterPage() {
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">College Email</FormLabel>
-                      <FormControl><Input {...field} placeholder="user@college.edu" className="bg-secondary/50 border-white/5" /></FormControl>
+                      <FormControl><Input {...field} placeholder="user@student.providence.edu.in" className="bg-secondary/50 border-white/5" /></FormControl>
                       <FormMessage className="text-[10px]" />
                     </FormItem>
                   )} />
