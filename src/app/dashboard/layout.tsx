@@ -26,10 +26,11 @@ export default function DashboardLayout({
   const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student' | 'advisor'>('admin')
   const [isApproved, setIsApproved] = useState(true)
   const [nodeId, setNodeId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    // Set random node ID only on client to avoid hydration mismatch
+    setMounted(true)
     setNodeId(Math.random().toString(36).substring(7).toUpperCase())
   }, [])
 
@@ -39,6 +40,11 @@ export default function DashboardLayout({
     setIsApproved(r === 'student' || r === 'admin') 
     const route = r === 'admin' ? 'admin' : r
     router.push(`/dashboard/${route}`)
+  }
+
+  // Prevent hydration mismatch by waiting for mount
+  if (!mounted) {
+    return <div className="min-h-screen bg-background" />
   }
 
   if (!isApproved) {
