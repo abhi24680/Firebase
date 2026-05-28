@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/sidebar"
 import { NavMain } from "@/components/dashboard/nav-main"
 import { Input } from "@/components/ui/input"
-import { Search, Bell, Settings, User, LogOut, ShieldAlert, ArrowLeft } from "lucide-react"
+import { Search, Bell, Settings, User, LogOut, ShieldAlert, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
+import { toast } from "@/hooks/use-toast"
 
 export default function DashboardLayout({
   children,
@@ -30,6 +31,7 @@ export default function DashboardLayout({
   const [isApproved, setIsApproved] = useState(false)
   const [nodeId, setNodeId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [isSimulatingApproval, setIsSimulatingApproval] = useState(false)
 
   // Sync role with pathname on mount and changes
   useEffect(() => {
@@ -44,10 +46,8 @@ export default function DashboardLayout({
     setMounted(true)
     setNodeId(Math.random().toString(36).substring(7).toUpperCase())
     
-    // In simulation:
-    // 1. Students are auto-approved
-    // 2. Admin (Root) has persistent access
-    // 3. HOD/Faculty/Advisor require manual validation (restricted screen)
+    // Logic: Admin and Student are auto-approved in this prototype.
+    // HOD, Faculty, and Advisor require Admin authorization.
     setIsApproved(role === 'student' || role === 'admin')
   }, [role])
 
@@ -58,7 +58,18 @@ export default function DashboardLayout({
     router.push(`/dashboard/${route}`)
   }
 
-  // Prevent hydration mismatch
+  const simulateApproval = () => {
+    setIsSimulatingApproval(true)
+    setTimeout(() => {
+      setIsApproved(true)
+      setIsSimulatingApproval(false)
+      toast({
+        title: "ACCESS_GRANTED",
+        description: "Admin node has authorized your HOD credentials.",
+      })
+    }, 2000)
+  }
+
   if (!mounted) {
     return <div className="min-h-screen bg-background" />
   }
@@ -75,24 +86,46 @@ export default function DashboardLayout({
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-headline font-bold uppercase tracking-tighter">Access Restricted</h2>
+            <h2 className="text-3xl font-headline font-bold uppercase tracking-tighter">Node Approval Required</h2>
             <p className="text-muted-foreground">
-              Your <span className="text-primary font-bold uppercase">{role}</span> node is currently awaiting manual approval.
+              Your <span className="text-primary font-bold uppercase">{role}</span> node is currently awaiting manual authorization from the System Administrator.
             </p>
           </div>
           <div className="p-4 bg-secondary/30 border border-sidebar-border rounded-lg text-sm text-left font-mono">
-            <p className="text-muted-foreground uppercase text-[10px] mb-2 tracking-widest">System Status:</p>
+            <p className="text-muted-foreground uppercase text-[10px] mb-2 tracking-widest">System Metadata:</p>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>PENDING_VALIDATION_NODE_ID: {nodeId || "INITIALIZING..."}</span>
+              <span className="truncate">NODE_ID: {nodeId || "INITIALIZING..."}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="h-2 w-2 rounded-full bg-muted" />
+              <span>STATUS: PENDING_ADMIN_SIGNATURE</span>
             </div>
           </div>
-          <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
-            <Link href="/auth/login">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              RETURN TO TERMINAL
-            </Link>
-          </Button>
+          
+          <div className="space-y-4">
+            <Button 
+              className="w-full bg-primary font-bold uppercase tracking-tighter" 
+              onClick={simulateApproval}
+              disabled={isSimulatingApproval}
+            >
+              {isSimulatingApproval ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Simulate Admin Approval (Demo Only)
+                </>
+              )}
+            </Button>
+            <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
+              <Link href="/auth/login">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Return to Terminal
+              </Link>
+            </Button>
+          </div>
+          
           <p className="text-[10px] text-muted-foreground uppercase tracking-tighter opacity-50">
             Institutional verification is required for all administrative and faculty nodes.
           </p>
