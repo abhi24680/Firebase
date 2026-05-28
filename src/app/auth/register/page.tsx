@@ -29,7 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowRight, Loader2, Info } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-const departments = ["CSE", "ECE", "ME", "CE", "EEE"]
+const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Required"),

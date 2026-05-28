@@ -10,7 +10,7 @@
         "fullName": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["student", "faculty", "hod", "admin", "advisor"] },
-        "department": { "type": "string", "enum": ["CSE", "ECE", "ME", "CE", "EEE"] },
+        "department": { "type": "string", "enum": ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"] },
         "isApproved": { "type": "boolean" },
         "collegeName": { "type": "string" },
         "rollNumber": { "type": "string", "description": "Student only" },
