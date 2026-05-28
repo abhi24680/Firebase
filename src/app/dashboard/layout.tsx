@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -46,8 +45,9 @@ export default function DashboardLayout({
     setMounted(true)
     setNodeId(Math.random().toString(36).substring(7).toUpperCase())
     
-    // Logic: Admin and Student are auto-approved in this prototype.
-    // HOD, Faculty, and Advisor require Admin authorization.
+    // Logic: Admin and Student are auto-approved.
+    // HOD requires Admin approval.
+    // Faculty and Advisor require HOD approval.
     setIsApproved(role === 'student' || role === 'admin')
   }, [role])
 
@@ -63,9 +63,10 @@ export default function DashboardLayout({
     setTimeout(() => {
       setIsApproved(true)
       setIsSimulatingApproval(false)
+      const approver = role === 'hod' ? 'System Administrator' : 'Head of Department'
       toast({
         title: "ACCESS_GRANTED",
-        description: "Admin node has authorized your HOD credentials.",
+        description: `${approver} has authorized your node credentials.`,
       })
     }, 2000)
   }
@@ -75,6 +76,8 @@ export default function DashboardLayout({
   }
 
   if (!isApproved) {
+    const approverName = role === 'hod' ? 'System Administrator' : 'Head of Department (HOD)'
+    
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute top-0 -left-20 w-72 h-72 bg-amber-500/10 rounded-full blur-[100px]" />
@@ -88,7 +91,7 @@ export default function DashboardLayout({
           <div className="space-y-2">
             <h2 className="text-3xl font-headline font-bold uppercase tracking-tighter">Node Approval Required</h2>
             <p className="text-muted-foreground">
-              Your <span className="text-primary font-bold uppercase">{role}</span> node is currently awaiting manual authorization from the System Administrator.
+              Your <span className="text-primary font-bold uppercase">{role}</span> node is currently awaiting manual authorization from the <span className="text-white font-bold">{approverName}</span>.
             </p>
           </div>
           <div className="p-4 bg-secondary/30 border border-sidebar-border rounded-lg text-sm text-left font-mono">
@@ -99,7 +102,7 @@ export default function DashboardLayout({
             </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="h-2 w-2 rounded-full bg-muted" />
-              <span>STATUS: PENDING_ADMIN_SIGNATURE</span>
+              <span>STATUS: PENDING_{role === 'hod' ? 'ADMIN' : 'HOD'}_SIGNATURE</span>
             </div>
           </div>
           
@@ -114,7 +117,7 @@ export default function DashboardLayout({
               ) : (
                 <>
                   <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Simulate Admin Approval (Demo Only)
+                  Simulate {role === 'hod' ? 'Admin' : 'HOD'} Approval
                 </>
               )}
             </Button>
