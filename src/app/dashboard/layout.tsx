@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -13,27 +14,23 @@ import { NavMain } from "@/components/dashboard/nav-main"
 import { Input } from "@/components/ui/input"
 import { Search, Bell, Settings, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/logo"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // In a real app, this role would come from session/auth
   const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student'>('admin')
 
   return (
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background overflow-hidden">
         <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-          <SidebarHeader className="h-16 flex items-center px-6 border-b border-sidebar-border">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary rounded flex items-center justify-center font-headline font-bold text-primary-foreground text-xl">
-                E
-              </div>
-              <span className="font-headline font-bold text-lg tracking-tight group-data-[collapsible=icon]:hidden">
-                EDUEGO
-              </span>
+          <SidebarHeader className="h-16 flex items-center px-4 border-b border-sidebar-border">
+            <Logo size="md" className="group-data-[collapsible=icon]:hidden" />
+            <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full">
+              <Logo size="sm" iconOnly />
             </div>
           </SidebarHeader>
           <NavMain role={role} />

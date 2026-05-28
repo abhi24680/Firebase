@@ -1,18 +1,15 @@
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Shield, Activity, Cpu, Database } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col selection:bg-primary selection:text-primary-foreground">
       <header className="h-20 border-b border-border/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-8">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-primary rounded flex items-center justify-center font-headline font-bold text-primary-foreground text-2xl">
-              E
-            </div>
-            <span className="font-headline font-bold text-2xl tracking-tighter">EDUEGO</span>
-          </div>
+          <Logo size="lg" />
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <Link href="#" className="hover:text-primary transition-colors">Architecture</Link>
             <Link href="#" className="hover:text-primary transition-colors">Documentation</Link>
@@ -87,12 +84,7 @@ export default function LandingPage() {
 
       <footer className="py-12 border-t border-border/50">
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-3 grayscale opacity-50">
-             <div className="h-8 w-8 bg-primary rounded flex items-center justify-center font-headline font-bold text-primary-foreground text-xl">
-              E
-            </div>
-            <span className="font-headline font-bold text-xl tracking-tight">EDUEGO</span>
-          </div>
+          <Logo size="md" className="grayscale opacity-50" />
           <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest">
             © 2024 Edugo Infrastructure. Internal Production Build v2.1.0-rc
           </p>
