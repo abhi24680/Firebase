@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Activity, ShieldCheck, Database, Camera, Cpu, Users, Eye, Loader2, RefreshCw } from "lucide-react"
+import { Activity, ShieldCheck, Database, Camera, Cpu, Users, Eye, Loader2, CheckCircle2, AlertTriangle } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { LiveScanLog } from "@/components/dashboard/live-scan-log"
 import { AttendanceStats } from "@/components/dashboard/attendance-stats"
@@ -98,6 +98,9 @@ export default function AdminDashboard() {
     }
   }
 
+  const isMatched = aiDetectedCount === rfidCount && aiDetectedCount > 0
+  const isMismatch = aiDetectedCount !== rfidCount && aiDetectedCount > 0
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col gap-2">
@@ -141,7 +144,7 @@ export default function AdminDashboard() {
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-0 relative h-[400px] flex items-center justify-center bg-black/40">
+            <CardContent className="p-0 relative h-[450px] flex items-center justify-center bg-black/40">
               {!isCameraActive ? (
                 <div className="text-center space-y-6 z-10 px-8">
                   <Camera className="h-16 w-16 text-muted-foreground/20 mx-auto" />
@@ -154,8 +157,8 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               ) : (
-                <div className="absolute inset-0 flex">
-                  <div className="w-1/2 h-full relative border-r border-white/5 bg-black">
+                <div className="absolute inset-0 flex flex-col md:flex-row">
+                  <div className="md:w-1/2 h-1/2 md:h-full relative border-b md:border-b-0 md:border-r border-white/5 bg-black">
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover opacity-60" />
                     <canvas ref={canvasRef} width="640" height="480" className="hidden" />
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-primary/10 pointer-events-none" />
@@ -164,52 +167,86 @@ export default function AdminDashboard() {
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                       </div>
                     )}
+                    <div className="absolute top-4 left-4">
+                      <Badge variant="outline" className="bg-black/60 backdrop-blur-md border-primary/20 text-primary text-[10px] font-mono">
+                        P2NET_INFERENCE_ENGINE
+                      </Badge>
+                    </div>
                   </div>
                   
-                  <div className="w-1/2 h-full p-8 flex flex-col justify-center bg-black/60 backdrop-blur-md">
-                    <div className="space-y-10">
-                      <div className="space-y-2 group">
-                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
-                          <Users className="h-3 w-3 text-primary" /> Global Occupancy (AI)
+                  <div className="md:w-1/2 h-1/2 md:h-full p-8 flex flex-col justify-center bg-black/60 backdrop-blur-md space-y-8">
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                          <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
+                            <Users className="h-3 w-3 text-primary" /> AI Count
+                          </div>
+                          <p className="text-5xl font-headline font-bold text-primary tracking-tighter">
+                            {aiDetectedCount || '--'}
+                          </p>
                         </div>
-                        <p className="text-6xl font-headline font-bold text-primary tracking-tighter animate-in fade-in slide-in-from-left-4">
-                          {aiDetectedCount || '--'}
-                        </p>
-                        <div className="text-[10px] text-emerald-500 font-mono flex items-center gap-2">
-                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          P2Net Node Sync Active
+
+                        <div className="space-y-2">
+                          <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
+                            <ShieldCheck className="h-3 w-3" /> RFID Count
+                          </div>
+                          <p className="text-5xl font-headline font-bold text-white tracking-tighter">
+                            {rfidCount}
+                          </p>
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
-                          <ShieldCheck className="h-3 w-3" /> Verified RFID Tags
-                        </div>
-                        <p className="text-6xl font-headline font-bold text-white tracking-tighter">
-                          {rfidCount}
-                        </p>
-                        <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest opacity-50">
-                          Serial Scan Log: ACTIVE
-                        </div>
-                      </div>
+                      <div className="h-px bg-white/5" />
 
-                      <div className="space-y-2">
-                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
-                          <Activity className="h-3 w-3 text-accent" /> Proxy Alerts
+                      <div className="space-y-4">
+                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest">
+                          Synchronization Status
                         </div>
-                        <p className={cn(
-                          "text-6xl font-headline font-bold tracking-tighter transition-colors",
-                          Math.abs(aiDetectedCount - rfidCount) > 2 ? "text-accent" : "text-emerald-500"
-                        )}>
-                          {aiDetectedCount > 0 ? Math.abs(aiDetectedCount - rfidCount) : '--'}
-                        </p>
-                        <div className={cn(
-                          "text-[10px] font-mono uppercase",
-                          aiDetectedCount > rfidCount ? "text-accent" : "text-emerald-500"
-                        )}>
-                          {aiDetectedCount > rfidCount ? "Potential Proxy Detected" : "Data Synchronized"}
-                        </div>
+                        
+                        {isCameraActive && !isInferenceActive ? (
+                          <div className={cn(
+                            "p-4 rounded-lg border flex items-center gap-4 transition-all duration-500",
+                            isMatched ? "bg-emerald-500/10 border-emerald-500/20" : 
+                            isMismatch ? "bg-amber-500/10 border-amber-500/20" : 
+                            "bg-secondary/30 border-white/5"
+                          )}>
+                            {isMatched ? (
+                              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                            ) : (
+                              <AlertTriangle className="h-8 w-8 text-amber-500" />
+                            )}
+                            <div>
+                              <p className={cn(
+                                "text-sm font-bold uppercase",
+                                isMatched ? "text-emerald-500" : "text-amber-500"
+                              )}>
+                                {isMatched ? "Data Synchronized" : "Count Mismatch Detected"}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground font-mono uppercase">
+                                {isMatched ? "AI count matches active RFID tags." : `Difference: ${Math.abs(aiDetectedCount - rfidCount)} entities detected.`}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-4 rounded-lg border bg-secondary/30 border-white/5 flex items-center gap-4 opacity-50">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            <div>
+                              <p className="text-sm font-bold uppercase text-muted-foreground italic">Performing Analysis...</p>
+                              <p className="text-[10px] text-muted-foreground font-mono uppercase">Calculating P2Net head counts.</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
+                    </div>
+
+                    <div className="space-y-2 pt-4">
+                      <div className="flex items-center gap-2 text-[10px] text-emerald-500 font-mono">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        P2Net Node Sync Active
+                      </div>
+                      <p className="text-[9px] text-muted-foreground font-mono uppercase leading-none opacity-50">
+                        Institutional Node ID: PRC-ETH-001
+                      </p>
                     </div>
                   </div>
                 </div>
