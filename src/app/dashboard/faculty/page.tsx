@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Camera, Users, Clock, ShieldCheck, Zap, ArrowRight, RefreshCw, BarChart3, Loader2, Plus, Trash2, UserPlus, Search } from "lucide-react"
+import { Camera, Users, Clock, ShieldCheck, Zap, RefreshCw, Loader2, Plus, Trash2, UserPlus, Search, Download, MessageSquare, UserCheck } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,10 +10,20 @@ import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
 import { analyzeCrowd } from "@/ai/flows/analyze-crowd-flow"
 import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 
 interface ScanLog {
   id: string
   studentId: string
+  name: string
   timestamp: string
   method: 'rfid' | 'manual'
 }
@@ -25,9 +36,9 @@ export default function FacultyDashboard() {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [quickAddId, setQuickAddId] = useState("")
   const [scanLogs, setScanLogs] = useState<ScanLog[]>([
-    { id: '1', studentId: 'CSE23-001', timestamp: '10:45:12 AM', method: 'rfid' },
-    { id: '2', studentId: 'CSE23-005', timestamp: '10:46:05 AM', method: 'rfid' },
-    { id: '3', studentId: 'CSE23-012', timestamp: '10:46:22 AM', method: 'manual' },
+    { id: '1', studentId: 'CSE23-001', name: 'John Doe', timestamp: '10:45:12 AM', method: 'rfid' },
+    { id: '2', studentId: 'CSE23-005', name: 'Alice Smith', timestamp: '10:46:05 AM', method: 'rfid' },
+    { id: '3', studentId: 'CSE23-012', name: 'Bob Wilson', timestamp: '10:46:22 AM', method: 'manual' },
   ])
   
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -103,6 +114,7 @@ export default function FacultyDashboard() {
     const newEntry: ScanLog = {
       id: Math.random().toString(36).substring(7),
       studentId: quickAddId.toUpperCase(),
+      name: "Manual Entry",
       timestamp: new Date().toLocaleTimeString(),
       method: 'manual'
     }
@@ -124,6 +136,13 @@ export default function FacultyDashboard() {
     })
   }
 
+  const exportCSV = () => {
+    toast({
+      title: "EXPORT_INITIALIZED",
+      description: "CSV node log generation in progress...",
+    })
+  }
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -142,11 +161,15 @@ export default function FacultyDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end">
+          <Button variant="outline" className="h-11 border-white/5 font-bold uppercase text-[10px]" onClick={exportCSV}>
+            <Download className="mr-2 h-4 w-4" />
+            EXPORT_SESSION_CSV
+          </Button>
+          <div className="flex flex-col items-end px-4">
             <span className="text-[10px] font-mono text-muted-foreground uppercase">Session Remaining</span>
             <span className="text-xl font-headline font-bold text-primary">{formatTime(timeLeft)}</span>
           </div>
-          <Button variant="destructive" className="font-bold text-[10px] uppercase tracking-tighter">
+          <Button variant="destructive" className="font-bold text-[10px] uppercase tracking-tighter h-11">
             TERMINATE SESSION
           </Button>
         </div>
@@ -278,7 +301,7 @@ export default function FacultyDashboard() {
               <Badge variant="outline" className="text-[8px] border-emerald-500/20 text-emerald-500 font-mono">LIVE_STREAM</Badge>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="max-h-[250px] overflow-y-auto divide-y divide-white/5">
+              <div className="max-h-[350px] overflow-y-auto divide-y divide-white/5">
                 {scanLogs.map((log) => (
                   <div key={log.id} className="group flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
                     <div className="flex flex-col gap-0.5">
@@ -290,14 +313,37 @@ export default function FacultyDashboard() {
                       </div>
                       <span className="text-[9px] text-muted-foreground font-mono uppercase">{log.timestamp}</span>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 transition-opacity"
-                      onClick={() => handleDeleteScan(log.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-primary/10">
+                              <MessageSquare className="h-3.5 w-3.5" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-card border-sidebar-border">
+                            <DialogHeader>
+                              <DialogTitle className="uppercase font-headline">Message Student: {log.studentId}</DialogTitle>
+                              <DialogDescription className="text-xs uppercase font-mono">Institutional broadcast via personal terminal.</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <div className="grid grid-cols-2 gap-2">
+                                <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase" onClick={() => toast({ title: "MESSAGE_SENT", description: "Request: 'Meet me after class' dispatched." })}>MEET_ME_AFTER</Button>
+                                <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase" onClick={() => toast({ title: "MESSAGE_SENT", description: "Notice: 'Attendance warning' dispatched." })}>ATT_WARNING</Button>
+                              </div>
+                              <Textarea placeholder="Enter custom institutional message..." className="bg-secondary/50 border-white/5 h-24" />
+                            </div>
+                            <Button className="w-full h-11 uppercase font-bold tracking-widest" onClick={() => toast({ title: "BROADCAST_SENT", description: "Message transmitted to student node." })}>TRANSMIT_DATA</Button>
+                          </DialogContent>
+                       </Dialog>
+                       <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteScan(log.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
                 {scanLogs.length === 0 && (
