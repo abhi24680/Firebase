@@ -48,7 +48,7 @@ const baseSchema = z.object({
   path: ["confirmPassword"],
 })
 
-type UserRole = "student" | "faculty" | "hod" | "advisor" | "admin";
+type UserRole = "student" | "faculty" | "hod" | "advisor";
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -115,12 +115,11 @@ export default function RegisterPage() {
             setRole(v as any)
             form.reset()
           }}>
-            <TabsList className="grid w-full grid-cols-5 mb-8 bg-secondary/50 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary/50 p-1 rounded-lg">
               <TabsTrigger value="student" className="text-[10px] uppercase tracking-tighter">Student</TabsTrigger>
               <TabsTrigger value="faculty" className="text-[10px] uppercase tracking-tighter">Faculty</TabsTrigger>
               <TabsTrigger value="advisor" className="text-[10px] uppercase tracking-tighter">Advisor</TabsTrigger>
               <TabsTrigger value="hod" className="text-[10px] uppercase tracking-tighter">HOD</TabsTrigger>
-              <TabsTrigger value="admin" className="text-[10px] uppercase tracking-tighter">Admin</TabsTrigger>
             </TabsList>
 
             <div className="mb-6">
@@ -130,14 +129,6 @@ export default function RegisterPage() {
                   <AlertTitle className="text-xs font-bold uppercase tracking-wider">AUTO_APPROVAL_ACTIVE</AlertTitle>
                   <AlertDescription className="text-[10px] opacity-80 uppercase font-mono">
                     Direct access granted upon verification.
-                  </AlertDescription>
-                </Alert>
-              ) : role === "admin" ? (
-                <Alert className="bg-red-500/5 border-red-500/20 text-red-500 rounded-lg">
-                  <Info className="h-4 w-4" />
-                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">ROOT_ACCESS_REQUEST</AlertTitle>
-                  <AlertDescription className="text-[10px] opacity-80 uppercase font-mono">
-                    Manual authorization required from Root System Administrator.
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -256,11 +247,11 @@ export default function RegisterPage() {
                   )} />
                 )}
 
-                {(role === "hod" || role === "admin") && (
+                {role === "hod" && (
                   <FormField control={form.control} name="designation" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Designation</FormLabel>
-                      <FormControl><Input placeholder={role === "admin" ? "e.g. System Administrator" : "e.g. Professor & Head"} {...field} className="bg-secondary/50 border-white/5" /></FormControl>
+                      <FormControl><Input placeholder="e.g. Professor & Head" {...field} className="bg-secondary/50 border-white/5" /></FormControl>
                     </FormItem>
                   )} />
                 )}
