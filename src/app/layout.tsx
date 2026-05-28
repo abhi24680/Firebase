@@ -1,10 +1,9 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'OmniSync RFID | Production Attendance System',
+  title: 'Edugo RFID | Production Attendance System',
   description: 'Industrial-grade RFID and AI crowd-counting attendance marking system.',
 };
 

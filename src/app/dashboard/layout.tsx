@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -30,10 +29,10 @@ export default function DashboardLayout({
           <SidebarHeader className="h-16 flex items-center px-6 border-b border-sidebar-border">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 bg-primary rounded flex items-center justify-center font-headline font-bold text-primary-foreground text-xl">
-                O
+                E
               </div>
               <span className="font-headline font-bold text-lg tracking-tight group-data-[collapsible=icon]:hidden">
-                OMNISYNC
+                EDUEGO
               </span>
             </div>
           </SidebarHeader>

@@ -1,4 +1,3 @@
-
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Shield, Activity, Cpu, Database } from "lucide-react"
@@ -10,9 +9,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-8">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-primary rounded flex items-center justify-center font-headline font-bold text-primary-foreground text-2xl">
-              O
+              E
             </div>
-            <span className="font-headline font-bold text-2xl tracking-tighter">OMNISYNC</span>
+            <span className="font-headline font-bold text-2xl tracking-tighter">EDUEGO</span>
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <Link href="#" className="hover:text-primary transition-colors">Architecture</Link>
@@ -90,12 +89,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3 grayscale opacity-50">
              <div className="h-8 w-8 bg-primary rounded flex items-center justify-center font-headline font-bold text-primary-foreground text-xl">
-              O
+              E
             </div>
-            <span className="font-headline font-bold text-xl tracking-tight">OMNISYNC</span>
+            <span className="font-headline font-bold text-xl tracking-tight">EDUEGO</span>
           </div>
           <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest">
-            © 2024 OmniSync Infrastructure. Internal Production Build v2.1.0-rc
+            © 2024 Edugo Infrastructure. Internal Production Build v2.1.0-rc
           </p>
           <div className="flex items-center gap-6 text-muted-foreground hover:text-foreground">
             <span className="text-xs font-mono">STATUS: ONLINE</span>
