@@ -21,7 +21,8 @@ import {
   ClipboardList,
   FileText,
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  Send
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -65,10 +66,10 @@ export function NavMain({ role }: NavMainProps) {
     ],
     advisor: [
       { title: "Batch Overview", url: "/dashboard/advisor", icon: LayoutDashboard },
-      { title: "Student Directory", url: "/dashboard/advisor/students", icon: Users },
+      { title: "Batch Students", url: "/dashboard/advisor/students", icon: Users },
       { title: "Batch Attendance", url: "/dashboard/advisor/attendance", icon: ClipboardCheck },
-      { title: "Performance", url: "/dashboard/advisor/performance", icon: Activity },
-      { title: "Communications", url: "/dashboard/advisor/messages", icon: MessageSquare },
+      { title: "Timetable", url: "/dashboard/advisor/timetable", icon: Calendar },
+      { title: "Leave Requests", url: "/dashboard/advisor/leaves", icon: Send },
     ],
     faculty: [
       { title: "Active Session", url: "/dashboard/faculty", icon: Activity },
