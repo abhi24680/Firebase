@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Database, Shield, Zap, Bell, Globe, Cpu } from "lucide-react"
@@ -7,6 +6,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 
 export default function AdminSettings() {
