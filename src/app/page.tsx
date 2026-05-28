@@ -1,4 +1,3 @@
-
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Shield, Activity, Cpu, Database } from "lucide-react"
@@ -16,9 +15,6 @@ export default function LandingPage() {
             <Link href="#" className="hover:text-primary transition-colors">Infrastructure</Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/auth/login">Access Console</Link>
-            </Button>
             <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-none skew-x-[-10deg]" asChild>
               <Link href="/auth/login">
                 <span className="skew-x-[10deg]">LOGIN</span>
