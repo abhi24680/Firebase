@@ -20,12 +20,10 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
+import { toast } from "@/hooks/use-toast"
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email").refine(
-    (val) => val.endsWith("providence.edu.in"),
-    "Only @providence.edu.in emails are allowed"
-  ),
+  email: z.string().min(1, "Username or Email required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
@@ -49,11 +47,28 @@ export default function LoginPage() {
 
   function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsLoading(true)
-    // Simulate auth logic
+    
+    // Testing Phase Hardcoded Admin Credentials
+    if (values.email === "admin1" && values.password === "admin@123") {
+      setTimeout(() => {
+        setIsLoading(false)
+        router.push("/dashboard/admin")
+        toast({
+          title: "ADMIN_ROOT_ACCESS",
+          description: "System administrator session initialized.",
+        })
+      }, 1000)
+      return
+    }
+
+    // Standard Academic Auth
     setTimeout(() => {
       setIsLoading(false)
-      // Redirect to dashboard (middleware would handle role-based routing)
-      router.push("/dashboard")
+      if (values.email.includes("student")) {
+        router.push("/dashboard/student")
+      } else {
+        router.push("/dashboard")
+      }
     }, 1500)
   }
 
@@ -73,7 +88,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-2xl font-headline font-bold uppercase tracking-tighter">Terminal Access</CardTitle>
           <CardDescription>
-            Authenticate with your academic credentials.
+            Authenticate with academic or admin credentials.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,9 +99,9 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">College Email</FormLabel>
+                    <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">ID / College Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@student.providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
+                      <Input placeholder="admin1 or name@student.providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
                     </FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>

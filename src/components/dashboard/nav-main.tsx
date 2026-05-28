@@ -19,7 +19,9 @@ import {
   History,
   GraduationCap,
   ClipboardList,
-  FileText
+  FileText,
+  Settings,
+  ShieldCheck
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -47,10 +49,11 @@ export function NavMain({ role }: NavMainProps) {
   const navGroups: Record<string, NavItem[]> = {
     admin: [
       { title: "System Health", url: "/dashboard/admin", icon: Activity },
-      { title: "HOD Approvals", url: "/dashboard/admin/approvals", icon: UserCheck },
       { title: "Departments", url: "/dashboard/admin/departments", icon: Building2 },
-      { title: "Global Logs", url: "/dashboard/admin/logs", icon: Shield },
-      { title: "Infrastructure", url: "/dashboard/admin/camera", icon: Camera },
+      { title: "HOD Management", url: "/dashboard/admin/hods", icon: ShieldCheck },
+      { title: "Student Directory", url: "/dashboard/admin/students", icon: Users },
+      { title: "Inference Node", url: "/dashboard/admin/camera", icon: Camera },
+      { title: "System Settings", url: "/dashboard/admin/settings", icon: Settings },
     ],
     hod: [
       { title: "Dept Dashboard", url: "/dashboard/hod", icon: LayoutDashboard },
@@ -76,9 +79,6 @@ export function NavMain({ role }: NavMainProps) {
     ],
     student: [
       { title: "My Terminal", url: "/dashboard/student", icon: LayoutDashboard },
-      { title: "Attendance Logs", url: "/dashboard/student", icon: ClipboardCheck },
-      { title: "Leave Portal", url: "/dashboard/student", icon: FileText },
-      { title: "Active Surveys", url: "/dashboard/student", icon: ClipboardList },
     ]
   }
 
@@ -91,16 +91,19 @@ export function NavMain({ role }: NavMainProps) {
           Terminal Access
         </SidebarGroupLabel>
         <SidebarMenu>
-          {items.map((item, idx) => (
-            <SidebarMenuItem key={`${item.url}-${idx}`}>
-              <SidebarMenuButton asChild isActive={pathname === item.url && idx === 0}>
-                <Link href={item.url}>
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item, idx) => {
+            const isActive = pathname === item.url
+            return (
+              <SidebarMenuItem key={`${item.url}-${idx}`}>
+                <SidebarMenuButton asChild isActive={isActive}>
+                  <Link href={item.url}>
+                    <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "")} />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarGroup>
 
