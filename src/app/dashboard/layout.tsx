@@ -24,7 +24,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student' | 'advisor'>('admin')
-  const [isApproved, setIsApproved] = useState(true)
+  const [isApproved, setIsApproved] = useState(false)
   const [nodeId, setNodeId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -32,12 +32,15 @@ export default function DashboardLayout({
   useEffect(() => {
     setMounted(true)
     setNodeId(Math.random().toString(36).substring(7).toUpperCase())
-  }, [])
+    // Students are auto-approved in the system simulation
+    setIsApproved(role === 'student')
+  }, [role])
 
   const handleRoleChange = (newRole: string) => {
     const r = newRole as any
     setRole(r)
-    setIsApproved(r === 'student' || r === 'admin') 
+    // Only auto-approve students in simulation; Admin/HOD/Faculty require root/manual authorization
+    setIsApproved(r === 'student') 
     const route = r === 'admin' ? 'admin' : r
     router.push(`/dashboard/${route}`)
   }
@@ -76,7 +79,10 @@ export default function DashboardLayout({
             </Link>
           </Button>
           <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">
-            Contact your department HOD or system administrator to expedite the verification process.
+            {role === 'admin' 
+              ? "Root System Administrator authorization required for Level 5 access."
+              : "Contact your department HOD or system administrator to expedite the verification process."
+            }
           </p>
         </div>
       </div>
