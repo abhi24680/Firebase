@@ -1,4 +1,4 @@
-# **App Name**: OmniSync RFID
+# **App Name**: EDUGO
 
 ## Core Features:
 
