@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Search, Bell, Settings, User, LogOut, ShieldAlert, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 
 export default function DashboardLayout({
@@ -23,44 +23,59 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
+  const router = useRouter()
+  
   const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student' | 'advisor'>('admin')
   const [isApproved, setIsApproved] = useState(false)
   const [nodeId, setNodeId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
-  const router = useRouter()
+
+  // Sync role with pathname on mount and changes
+  useEffect(() => {
+    if (pathname.includes('/dashboard/admin')) setRole('admin')
+    else if (pathname.includes('/dashboard/hod')) setRole('hod')
+    else if (pathname.includes('/dashboard/advisor')) setRole('advisor')
+    else if (pathname.includes('/dashboard/faculty')) setRole('faculty')
+    else if (pathname.includes('/dashboard/student')) setRole('student')
+  }, [pathname])
 
   useEffect(() => {
     setMounted(true)
     setNodeId(Math.random().toString(36).substring(7).toUpperCase())
-    // Students are auto-approved in the system simulation
-    setIsApproved(role === 'student')
+    
+    // In simulation:
+    // 1. Students are auto-approved
+    // 2. Admin (Root) has persistent access
+    // 3. HOD/Faculty/Advisor require manual validation (restricted screen)
+    setIsApproved(role === 'student' || role === 'admin')
   }, [role])
 
   const handleRoleChange = (newRole: string) => {
     const r = newRole as any
     setRole(r)
-    // Only auto-approve students in simulation; Admin/HOD/Faculty require root/manual authorization
-    setIsApproved(r === 'student') 
     const route = r === 'admin' ? 'admin' : r
     router.push(`/dashboard/${route}`)
   }
 
-  // Prevent hydration mismatch by waiting for mount
+  // Prevent hydration mismatch
   if (!mounted) {
     return <div className="min-h-screen bg-background" />
   }
 
   if (!isApproved) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
+      <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-0 -left-20 w-72 h-72 bg-amber-500/10 rounded-full blur-[100px]" />
+        
+        <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-500 relative z-10">
           <div className="flex justify-center">
             <div className="h-24 w-24 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
               <ShieldAlert className="h-12 w-12 text-amber-500" />
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-headline font-bold">Access Restricted</h2>
+            <h2 className="text-3xl font-headline font-bold uppercase tracking-tighter">Access Restricted</h2>
             <p className="text-muted-foreground">
               Your <span className="text-primary font-bold uppercase">{role}</span> node is currently awaiting manual approval.
             </p>
@@ -72,17 +87,14 @@ export default function DashboardLayout({
               <span>PENDING_VALIDATION_NODE_ID: {nodeId || "INITIALIZING..."}</span>
             </div>
           </div>
-          <Button variant="outline" className="w-full" asChild>
+          <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
             <Link href="/auth/login">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              RETURN TO LOGIN
+              RETURN TO TERMINAL
             </Link>
           </Button>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">
-            {role === 'admin' 
-              ? "Root System Administrator authorization required for Level 5 access."
-              : "Contact your department HOD or system administrator to expedite the verification process."
-            }
+          <p className="text-[10px] text-muted-foreground uppercase tracking-tighter opacity-50">
+            Institutional verification is required for all administrative and faculty nodes.
           </p>
         </div>
       </div>
@@ -102,13 +114,13 @@ export default function DashboardLayout({
           <NavMain role={role} />
           <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center border border-accent/20">
-                <User className="h-5 w-5 text-accent" />
+              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
+                <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-semibold truncate uppercase">Active Node</p>
+                <p className="text-sm font-semibold truncate uppercase">Verified Node</p>
                 <p className="text-xs text-muted-foreground truncate uppercase font-mono tracking-tighter">
-                  {role}-NODE-01
+                  {role}-NODE-PRC
                 </p>
               </div>
             </div>
@@ -131,7 +143,7 @@ export default function DashboardLayout({
 
             <div className="flex items-center gap-4">
               <div className="hidden lg:flex items-center gap-2 mr-4">
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Auth Level:</span>
+                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Simulation Level:</span>
                 <select 
                   className="bg-transparent text-xs font-bold text-primary uppercase cursor-pointer focus:outline-none"
                   value={role}
