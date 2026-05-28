@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Camera, Users, Clock, ShieldCheck, Zap, ArrowRight, RefreshCw, BarChart3, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,22 +33,8 @@ export default function FacultyDashboard() {
     }
   }, [isCameraActive, stream])
 
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
-      setStream(mediaStream)
-      setIsCameraActive(true)
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "CAMERA_ERROR",
-        description: "Could not access hardware camera node.",
-      })
-    }
-  }
-
-  const triggerSnapshot = async () => {
-    if (!videoRef.current || !canvasRef.current) return
+  const triggerSnapshot = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current || isScanning) return
 
     setIsScanning(true)
     const context = canvasRef.current.getContext('2d')
@@ -60,19 +45,45 @@ export default function FacultyDashboard() {
       try {
         const result = await analyzeCrowd({ imageBuffer: dataUrl })
         setAiCount(result.count)
-        toast({
-          title: "P2NET_INFERENCE_COMPLETE",
-          description: `Detected ${result.count} individuals with ${result.confidence} confidence.`,
-        })
       } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "INFERENCE_FAILED",
-          description: "P2Net cloud node was unable to process the frame.",
-        })
+        console.error("AI Scan failed:", error)
       } finally {
         setIsScanning(false)
       }
+    }
+  }, [isScanning])
+
+  // Automated Scanning Loop: Runs every 10 seconds when camera is active
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isCameraActive) {
+      // Immediate first scan
+      triggerSnapshot()
+      
+      interval = setInterval(() => {
+        triggerSnapshot()
+      }, 10000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isCameraActive, triggerSnapshot])
+
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
+      setStream(mediaStream)
+      setIsCameraActive(true)
+      toast({
+        title: "VISION_NODE_READY",
+        description: "Automated P2Net crowd tracking initialized.",
+      })
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "CAMERA_ERROR",
+        description: "Could not access hardware camera node.",
+      })
     }
   }
 
@@ -154,11 +165,11 @@ export default function FacultyDashboard() {
               disabled={!isCameraActive || isScanning}
             >
               {isScanning ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-2 h-3 w-3" />}
-              TRIGGER P2NET SCAN
+              MANUAL SNAPSHOT
             </Button>
             <div className="flex gap-4">
+              <span className="text-[10px] font-mono text-muted-foreground uppercase">AUTO_SYNC: 10s</span>
               <span className="text-[10px] font-mono text-muted-foreground uppercase">GPU_LOAD: {isScanning ? '92%' : '12%'}</span>
-              <span className="text-[10px] font-mono text-muted-foreground uppercase">LATENCY: {isScanning ? '240ms' : '--'}</span>
             </div>
           </CardFooter>
         </Card>
@@ -167,7 +178,7 @@ export default function FacultyDashboard() {
           <Card className="bg-sidebar/30 border-sidebar-border">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                < ShieldCheck className="h-4 w-4 text-emerald-500" />
                 <CardTitle className="text-sm font-semibold uppercase tracking-wider">RFID Sync Status</CardTitle>
               </div>
             </CardHeader>

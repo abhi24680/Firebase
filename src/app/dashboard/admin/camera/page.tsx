@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Camera, Laptop, Usb, Smartphone, Radio, Settings2, RefreshCw, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,26 +34,8 @@ export default function AdminCamera() {
     }
   }, [isCameraActive, stream])
 
-  const startNode = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
-      setStream(mediaStream)
-      setIsCameraActive(true)
-      toast({
-        title: "VISION_NODE_INITIALIZED",
-        description: "Hardware capture stream established.",
-      })
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "CAPTURE_FAILED",
-        description: "Could not initialize hardware camera node.",
-      })
-    }
-  }
-
-  const runDiagnostics = async () => {
-    if (!videoRef.current || !canvasRef.current) return
+  const runDiagnostics = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current || isInferenceActive) return
 
     setIsInferenceActive(true)
     const context = canvasRef.current.getContext('2d')
@@ -64,20 +46,45 @@ export default function AdminCamera() {
       try {
         const result = await analyzeCrowd({ imageBuffer: dataUrl })
         setLastCount(result.count)
-        toast({
-          title: "DIAGNOSTIC_COMPLETE",
-          description: `P2Net inference successful. Detected ${result.count} entities.`,
-        })
       } catch (error: any) {
         console.error("Inference Error:", error)
-        toast({
-          variant: "destructive",
-          title: "INFERENCE_NODE_ERROR",
-          description: error.message || "Failed to process visual data. Check API configuration.",
-        })
       } finally {
         setIsInferenceActive(false)
       }
+    }
+  }, [isInferenceActive])
+
+  // Automated Inference Loop: Runs every 10 seconds when camera is active
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isCameraActive) {
+      // Run immediately on start
+      runDiagnostics()
+      
+      interval = setInterval(() => {
+        runDiagnostics()
+      }, 10000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isCameraActive, runDiagnostics])
+
+  const startNode = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
+      setStream(mediaStream)
+      setIsCameraActive(true)
+      toast({
+        title: "VISION_NODE_INITIALIZED",
+        description: "Automated P2Net background monitoring active.",
+      })
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "CAPTURE_FAILED",
+        description: "Could not initialize hardware camera node.",
+      })
     }
   }
 
@@ -152,6 +159,7 @@ export default function AdminCamera() {
               <ul className="space-y-1 text-[10px] font-mono text-muted-foreground">
                 <li className="flex justify-between"><span>LINK_STABILITY</span> <span className="text-emerald-500">EXCELLENT</span></li>
                 <li className="flex justify-between"><span>LAST_INFERENCE_COUNT</span> <span>{lastCount ?? '--'} entities</span></li>
+                <li className="flex justify-between"><span>AUTO_INFERENCE</span> <span className={isCameraActive ? 'text-emerald-500' : 'text-muted-foreground'}>{isCameraActive ? 'ACTIVE (10s)' : 'IDLE'}</span></li>
                 <li className="flex justify-between"><span>NODE_SYNC</span> <span>{isCameraActive ? 'CONNECTED' : 'DISCONNECTED'}</span></li>
               </ul>
             </div>
@@ -215,7 +223,7 @@ export default function AdminCamera() {
               disabled={!isCameraActive || isInferenceActive}
             >
               {isInferenceActive ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <RefreshCw className="h-3 w-3 mr-2" />}
-              RUN P2NET DIAGNOSTIC
+              MANUAL RE-SCAN
             </Button>
           </CardFooter>
         </Card>
