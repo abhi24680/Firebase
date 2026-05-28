@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { ShieldCheck, ArrowRight, Loader2, UserPlus } from "lucide-react"
+import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 
 const loginSchema = z.object({
@@ -32,6 +32,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -61,9 +62,9 @@ export default function LoginPage() {
           <div className="flex justify-center mb-6">
             <Logo size="lg" />
           </div>
-          <CardTitle className="text-2xl font-headline font-bold">Terminal Login</CardTitle>
+          <CardTitle className="text-2xl font-headline font-bold uppercase tracking-tighter">Terminal Access</CardTitle>
           <CardDescription>
-            Enter your academic credentials to access your dashboard.
+            Authenticate with your academic credentials.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -74,11 +75,11 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>College Email</FormLabel>
+                    <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">College Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@college.edu" {...field} className="bg-secondary/50" />
+                      <Input placeholder="name@college.edu" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
               />
@@ -88,21 +89,34 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} className="bg-secondary/50" />
+                      <div className="relative">
+                        <Input 
+                          type={showPassword ? "text" : "password"} 
+                          {...field} 
+                          className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors pr-10" 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full h-11 font-bold group" disabled={isLoading}>
+              <Button type="submit" className="w-full h-11 font-bold group mt-4 shadow-lg shadow-primary/20" disabled={isLoading}>
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    LOGIN
+                    SECURE LOGIN
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
@@ -110,16 +124,21 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button variant="outline" className="w-full border-sidebar-border" asChild>
+        <CardFooter className="flex flex-col gap-4 pt-2">
+          <div className="flex items-center gap-4 w-full">
+            <div className="h-px bg-white/5 flex-1" />
+            <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest">New Node?</span>
+            <div className="h-px bg-white/5 flex-1" />
+          </div>
+          <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
             <Link href="/auth/register">
               <UserPlus className="mr-2 h-4 w-4" />
-              CREATE ACCOUNT
+              REGISTER ACCOUNT
             </Link>
           </Button>
-          <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground uppercase font-mono tracking-widest">
+          <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground uppercase font-mono tracking-widest opacity-50">
             <ShieldCheck className="h-3 w-3 text-primary" />
-            Encrypted Authentication Node
+            ENCRYPTED_AUTH_ACTIVE
           </div>
         </CardFooter>
       </Card>

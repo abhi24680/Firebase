@@ -24,19 +24,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight, Loader2, Info } from "lucide-react"
+import { ArrowRight, Loader2, Info, Eye, EyeOff, ShieldCheck } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import Link from "next/link"
 
 const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Required"),
-  email: z.string().email().refine(v => v.endsWith("@college.edu"), "Use college email"),
-  password: z.string().min(6),
-  confirmPassword: z.string().min(6),
+  email: z.string().email().refine(v => v.endsWith("@college.edu"), "Use @college.edu email"),
+  password: z.string().min(6, "At least 6 characters"),
+  confirmPassword: z.string().min(6, "At least 6 characters"),
   department: z.string().min(1, "Select department"),
+  rollNumber: z.string().optional(),
+  semester: z.string().optional(),
+  subject: z.string().optional(),
+  designation: z.string().optional(),
+  assignedBatch: z.string().optional(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -46,8 +52,9 @@ export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState<"student" | "faculty" | "hod" | "advisor">("student")
+  const [showPassword, setShowPassword] = useState(false)
 
-  const form = useForm<z.infer<typeof baseSchema> & any>({
+  const form = useForm<z.infer<typeof baseSchema>>({
     resolver: zodResolver(baseSchema),
     defaultValues: {
       fullName: "",
@@ -65,61 +72,60 @@ export default function RegisterPage() {
 
   function onSubmit(values: any) {
     setIsLoading(true)
-    // Simulate user creation with isApproved logic
     const userData = {
       ...values,
       role,
-      isApproved: role === "student", // Students are auto-approved
+      isApproved: role === "student",
     }
     
-    console.log("Saving user:", userData)
+    console.log("Saving user node:", userData)
     
     setTimeout(() => {
       setIsLoading(false)
-      // If student, go to login. If others, explain approval
       router.push("/auth/login")
     }, 2000)
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(88,101,242,0.05),transparent)] pointer-events-none" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-[120px]" />
       
       <Card className="w-full max-w-2xl bg-card/50 backdrop-blur-sm border-sidebar-border relative z-10">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
             <Logo size="md" />
           </div>
-          <CardTitle className="text-2xl font-headline">Registration Terminal</CardTitle>
-          <CardDescription>Configure your credentials for the Edugo network.</CardDescription>
+          <CardTitle className="text-2xl font-headline font-bold uppercase tracking-tighter">Node Registration</CardTitle>
+          <CardDescription>Configure your identity on the Edugo network.</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="student" onValueChange={(v) => {
             setRole(v as any)
             form.reset()
           }}>
-            <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary h-auto py-1">
-              <TabsTrigger value="student" className="text-[10px] sm:text-xs">STUDENT</TabsTrigger>
-              <TabsTrigger value="faculty" className="text-[10px] sm:text-xs">FACULTY</TabsTrigger>
-              <TabsTrigger value="advisor" className="text-[10px] sm:text-xs">ADVISOR</TabsTrigger>
-              <TabsTrigger value="hod" className="text-[10px] sm:text-xs">HOD</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary/50 p-1 rounded-lg">
+              <TabsTrigger value="student" className="text-[10px] uppercase tracking-tighter">Student</TabsTrigger>
+              <TabsTrigger value="faculty" className="text-[10px] uppercase tracking-tighter">Faculty</TabsTrigger>
+              <TabsTrigger value="advisor" className="text-[10px] uppercase tracking-tighter">Advisor</TabsTrigger>
+              <TabsTrigger value="hod" className="text-[10px] uppercase tracking-tighter">HOD</TabsTrigger>
             </TabsList>
 
             <div className="mb-6">
               {role === "student" ? (
-                <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500">
+                <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500 rounded-lg">
                   <Info className="h-4 w-4" />
-                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">Auto-Approval Active</AlertTitle>
-                  <AlertDescription className="text-[10px]">
-                    Student accounts are granted immediate access to the dashboard after registration.
+                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">AUTO_APPROVAL_ACTIVE</AlertTitle>
+                  <AlertDescription className="text-[10px] opacity-80 uppercase font-mono">
+                    Direct access granted upon verification.
                   </AlertDescription>
                 </Alert>
               ) : (
-                <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-500">
+                <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-500 rounded-lg">
                   <Info className="h-4 w-4" />
-                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">Approval Required</AlertTitle>
-                  <AlertDescription className="text-[10px]">
-                    Your account will require manual approval from the {role === 'hod' ? 'Admin' : 'HOD'} before console access is granted.
+                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">VALIDATION_REQUIRED</AlertTitle>
+                  <AlertDescription className="text-[10px] opacity-80 uppercase font-mono">
+                    Manual authorization required from {role === 'hod' ? 'Admin' : 'HOD'}.
                   </AlertDescription>
                 </Alert>
               )}
@@ -129,46 +135,83 @@ export default function RegisterPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="fullName" render={({ field }) => (
-                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Full Name</FormLabel>
+                      <FormControl><Input {...field} className="bg-secondary/50 border-white/5" /></FormControl>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
-                    <FormItem><FormLabel>College Email</FormLabel><FormControl><Input {...field} placeholder="user@college.edu" className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">College Email</FormLabel>
+                      <FormControl><Input {...field} placeholder="user@college.edu" className="bg-secondary/50 border-white/5" /></FormControl>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
                   )} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="password" render={({ field }) => (
-                    <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            type={showPassword ? "text" : "password"} 
+                            {...field} 
+                            className="bg-secondary/50 border-white/5 pr-10" 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
                   )} />
                   <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-                    <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input type={showPassword ? "text" : "password"} {...field} className="bg-secondary/50 border-white/5" />
+                      </FormControl>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
                   )} />
                 </div>
 
                 <FormField control={form.control} name="department" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Department</FormLabel>
+                    <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Department</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger className="bg-secondary/50"><SelectValue placeholder="Select Dept" /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger className="bg-secondary/50 border-white/5"><SelectValue placeholder="Select Academic Unit" /></SelectTrigger></FormControl>
                       <SelectContent>
-                        {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        {departments.map(d => <SelectItem key={d} value={d} className="text-xs uppercase">{d}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-[10px]" />
                   </FormItem>
                 )} />
 
                 {role === "student" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="rollNumber" render={({ field }) => (
-                      <FormItem><FormLabel>Roll Number</FormLabel><FormControl><Input {...field} placeholder="e.g. CSE-23-01" className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                      <FormItem>
+                        <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Roll Number</FormLabel>
+                        <FormControl><Input {...field} placeholder="e.g. CSE-23-01" className="bg-secondary/50 border-white/5" /></FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
                     )} />
                     <FormField control={form.control} name="semester" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Semester</FormLabel>
+                        <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Semester</FormLabel>
                         <Select onValueChange={field.onChange}>
-                          <FormControl><SelectTrigger className="bg-secondary/50"><SelectValue placeholder="Select Sem" /></SelectTrigger></FormControl>
-                          <SelectContent>{[1,2,3,4,5,6,7,8].map(s => <SelectItem key={s} value={s.toString()}>Sem {s}</SelectItem>)}</SelectContent>
+                          <FormControl><SelectTrigger className="bg-secondary/50 border-white/5"><SelectValue placeholder="Select Sem" /></SelectTrigger></FormControl>
+                          <SelectContent>{[1,2,3,4,5,6,7,8].map(s => <SelectItem key={s} value={s.toString()} className="text-xs">SEM {s}</SelectItem>)}</SelectContent>
                         </Select>
                       </FormItem>
                     )} />
@@ -177,29 +220,43 @@ export default function RegisterPage() {
 
                 {role === "faculty" && (
                   <FormField control={form.control} name="subject" render={({ field }) => (
-                    <FormItem><FormLabel>Primary Subject</FormLabel><FormControl><Input placeholder="e.g. Data Structures" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Primary Subject</FormLabel>
+                      <FormControl><Input placeholder="e.g. Data Structures" {...field} className="bg-secondary/50 border-white/5" /></FormControl>
+                    </FormItem>
                   )} />
                 )}
 
                 {role === "advisor" && (
                   <FormField control={form.control} name="assignedBatch" render={({ field }) => (
-                    <FormItem><FormLabel>Assigned Batch/Class</FormLabel><FormControl><Input placeholder="e.g. CSE 2021-25 A" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Assigned Batch</FormLabel>
+                      <FormControl><Input placeholder="e.g. CSE 2021-25 A" {...field} className="bg-secondary/50 border-white/5" /></FormControl>
+                    </FormItem>
                   )} />
                 )}
 
                 {role === "hod" && (
                   <FormField control={form.control} name="designation" render={({ field }) => (
-                    <FormItem><FormLabel>Designation</FormLabel><FormControl><Input placeholder="e.g. Professor & Head" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Designation</FormLabel>
+                      <FormControl><Input placeholder="e.g. Professor & Head" {...field} className="bg-secondary/50 border-white/5" /></FormControl>
+                    </FormItem>
                   )} />
                 )}
 
-                <Button type="submit" className="w-full h-11 font-bold group mt-6" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="animate-spin" /> : <>REGISTER ACCOUNT <ArrowRight className="ml-2 h-4 w-4" /></>}
+                <Button type="submit" className="w-full h-11 font-bold group mt-6 shadow-lg shadow-primary/20" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : <>INITIALIZE ACCOUNT <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" /></>}
                 </Button>
               </form>
             </Form>
           </Tabs>
         </CardContent>
+        <CardFooter className="justify-center border-t border-white/5 py-4">
+          <p className="text-[10px] text-muted-foreground uppercase font-mono">
+            Already have a node? <Link href="/auth/login" className="text-primary hover:underline font-bold">LOGIN HERE</Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )
