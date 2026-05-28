@@ -22,7 +22,9 @@ import {
   FileText,
   Settings,
   ShieldCheck,
-  Send
+  Send,
+  Link as LinkIcon,
+  UserCog
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -57,12 +59,13 @@ export function NavMain({ role }: NavMainProps) {
       { title: "System Settings", url: "/dashboard/admin/settings", icon: Settings },
     ],
     hod: [
-      { title: "Dept Dashboard", url: "/dashboard/hod", icon: LayoutDashboard },
-      { title: "Faculty Approvals", url: "/dashboard/hod/approvals", icon: UserCheck },
-      { title: "Timetable Editor", url: "/dashboard/hod/timetable", icon: Calendar },
-      { title: "Subject Mapping", url: "/dashboard/hod/mapping", icon: Building2 },
-      { title: "Messages", url: "/dashboard/hod/messages", icon: MessageSquare },
-      { title: "All Attendance", url: "/dashboard/hod/attendance", icon: ClipboardCheck },
+      { title: "Dept Overview", url: "/dashboard/hod", icon: LayoutDashboard },
+      { title: "Validation Queue", url: "/dashboard/hod/approvals", icon: ShieldCheck },
+      { title: "Master Timetable", url: "/dashboard/hod/timetable", icon: Calendar },
+      { title: "Subject Mapping", url: "/dashboard/hod/mapping", icon: LinkIcon },
+      { title: "Faculty Hub", url: "/dashboard/hod/faculty", icon: UserCog },
+      { title: "Student Hub", url: "/dashboard/hod/students", icon: GraduationCap },
+      { title: "Attendance Logs", url: "/dashboard/hod/attendance", icon: ClipboardCheck },
     ],
     advisor: [
       { title: "Batch Overview", url: "/dashboard/advisor", icon: LayoutDashboard },
