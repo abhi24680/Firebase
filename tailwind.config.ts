@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -64,6 +63,35 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      keyframes: {
+        'gradient-x': {
+          '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+          '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        'grid-flow': {
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(40px)' },
+        },
+        'shimmer': {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
+        },
+        'border-beam': {
+          '100%': { 'offset-distance': '100%' },
+        },
+      },
+      animation: {
+        'gradient-x': 'gradient-x 15s ease infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'grid-flow': 'grid-flow 20s linear infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'shimmer': 'shimmer 2.5s infinite linear',
+        'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear',
       },
     },
   },

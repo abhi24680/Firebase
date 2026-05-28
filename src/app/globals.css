@@ -1,38 +1,37 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 225 19% 8%;
+    --background: 225 19% 4%;
     --foreground: 0 0% 98%;
-    --card: 225 19% 10%;
+    --card: 225 19% 6%;
     --card-foreground: 0 0% 98%;
-    --popover: 225 19% 10%;
+    --popover: 225 19% 6%;
     --popover-foreground: 0 0% 98%;
-    --primary: 232 62% 57%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 225 19% 15%;
+    --secondary: 225 19% 10%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 225 19% 15%;
+    --muted: 225 19% 10%;
     --muted-foreground: 225 10% 70%;
-    --accent: 193 63% 53%;
-    --accent-foreground: 225 19% 8%;
+    --accent: 193 91% 50%;
+    --accent-foreground: 225 19% 4%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 225 19% 18%;
-    --input: 225 19% 18%;
-    --ring: 232 62% 57%;
-    --radius: 0.375rem;
-    --sidebar-background: 225 19% 6%;
+    --border: 225 19% 12%;
+    --input: 225 19% 12%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
+    --sidebar-background: 225 19% 3%;
     --sidebar-foreground: 225 10% 90%;
-    --sidebar-primary: 232 62% 57%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 225 19% 12%;
+    --sidebar-accent: 225 19% 8%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 225 19% 12%;
-    --sidebar-ring: 232 62% 57%;
+    --sidebar-border: 225 19% 8%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -41,9 +40,32 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline font-bold tracking-tight;
   }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+  .neon-glow {
+    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.5);
+  }
+  .neon-border {
+    @apply border-primary/30 hover:border-primary/60 transition-colors;
+    box-shadow: inset 0 0 10px -5px hsl(var(--primary) / 0.3);
+  }
+  .text-glow {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
+}
+
+.grid-background {
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
 }

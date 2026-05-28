@@ -1,93 +1,204 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Shield, Activity, Cpu, Database } from "lucide-react"
+import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, BarChart3, Users } from "lucide-react"
 import { Logo } from "@/components/logo"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
 export default function LandingPage() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
   return (
-    <div className="min-h-screen bg-background flex flex-col selection:bg-primary selection:text-primary-foreground">
-      <header className="h-20 border-b border-border/50 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-full h-full grid-background opacity-20 animate-grid-flow" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[150px] rounded-full animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/20 blur-[150px] rounded-full animate-pulse-slow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,transparent_0%,rgba(4,7,14,0.8)_100%)]" />
+      </div>
+
+      <header className="h-20 border-b border-white/5 glass sticky top-0 z-50">
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-8">
           <Logo size="lg" />
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-            <Link href="#" className="hover:text-primary transition-colors">Architecture</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Documentation</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Infrastructure</Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-none skew-x-[-10deg]" asChild>
-              <Link href="/auth/login">
-                <span className="skew-x-[10deg]">LOGIN</span>
+          <nav className="hidden lg:flex items-center gap-10 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            {['Architecture', 'Documentation', 'Infrastructure'].map((item) => (
+              <Link 
+                key={item} 
+                href={`#${item.toLowerCase()}`} 
+                className="hover:text-primary transition-all relative group py-2"
+              >
+                {item}
+                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
               </Link>
-            </Button>
-          </div>
+            ))}
+          </nav>
+          <Button 
+            className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all rounded-none px-8 font-bold text-xs tracking-tighter shadow-lg hover:shadow-primary/20"
+            asChild
+          >
+            <Link href="/auth/login">LOGIN TERMINAL</Link>
+          </Button>
         </div>
       </header>
 
-      <main className="flex-1">
+      <main className="relative z-10">
         {/* Hero Section */}
-        <section className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
-          <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/rfidgrid/1920/1080')] opacity-5 bg-fixed"></div>
-          <div className="absolute top-1/4 left-1/4 h-64 w-64 bg-accent/20 blur-[120px] rounded-full"></div>
-          <div className="absolute bottom-1/4 right-1/4 h-64 w-64 bg-primary/20 blur-[120px] rounded-full"></div>
+        <section className="min-h-[90vh] flex flex-col items-center justify-center px-8 text-center pt-20">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-primary/20 text-primary text-[10px] font-mono uppercase tracking-[0.2em] mb-12 animate-fade-in">
+            <Zap className="h-3 w-3 animate-pulse" /> Infrastructure v2.1 Enterprise
+          </div>
           
-          <div className="max-w-5xl mx-auto text-center px-8 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono uppercase tracking-widest mb-8">
-              <Activity className="h-3 w-3 animate-pulse" /> Production Ready System v2.1
-            </div>
-            <h1 className="text-6xl md:text-8xl font-headline font-bold tracking-tighter mb-8 leading-[0.9]">
-              AUTONOMOUS <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-gradient">ATTENDANCE</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12 font-body leading-relaxed">
-              Industrial-grade RFID integration coupled with GPU-accelerated P2Net crowd inference for absolute accuracy in educational environments.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Button size="lg" className="h-14 px-8 text-lg font-bold min-w-[200px]" asChild>
-                <Link href="/auth/login">Enter Terminal</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold border-border/50 hover:bg-white/5 min-w-[200px]">
-                Documentation
-              </Button>
-            </div>
+          <h1 className="text-[12vw] md:text-[10rem] font-headline font-bold leading-[0.8] mb-8 select-none tracking-tighter">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient-x text-glow">
+              EDUGO
+            </span>
+          </h1>
+
+          <p className="max-w-3xl text-lg md:text-xl text-muted-foreground font-body leading-relaxed mb-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            Next-generation Smart Classroom Infrastructure powered by <span className="text-white font-semibold">RFID automation</span>, 
+            <span className="text-white font-semibold text-glow"> AI-driven occupancy intelligence</span>, and institutional analytics.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in fade-in zoom-in duration-1000 delay-300">
+            <Button size="lg" className="h-16 px-12 text-sm font-bold bg-primary hover:bg-primary/90 rounded-none shadow-[0_0_30px_rgba(59,130,246,0.4)] group transition-all" asChild>
+              <Link href="/auth/login" className="flex items-center gap-3">
+                ENTER DASHBOARD
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-16 px-12 text-sm font-bold glass rounded-none hover:bg-white/5 border-white/10">
+              VIEW DOCUMENTATION
+            </Button>
+          </div>
+
+          {/* Stats Section */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl mt-32 px-4">
+            {[
+              { label: "Attendance Accuracy", val: "99.9%", icon: Shield, color: "text-primary" },
+              { label: "AI Count Verification", val: "Real-time", icon: Cpu, color: "text-accent" },
+              { label: "Departments", val: "Multi-Sync", icon: Database, color: "text-primary" },
+              { label: "Energy Optimization", val: "Active", icon: Zap, color: "text-accent" },
+            ].map((stat, i) => (
+              <div key={i} className="glass p-6 border-white/5 hover:border-primary/50 transition-all group hover:-translate-y-1">
+                <stat.icon className={cn("h-6 w-6 mb-4", stat.color)} />
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
+                <p className="text-xl font-headline font-bold">{stat.val}</p>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Feature Grid */}
-        <section className="py-24 px-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="p-8 bg-secondary/20 border border-border/50 hover:border-primary/50 transition-all group">
-              <Shield className="h-10 w-10 text-primary mb-6 group-hover:scale-110 transition-transform" />
-              <h3 className="text-xl font-headline font-bold mb-4">Secure RFID</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Multi-point serial reader network with encrypted roll-number mapping and live heartbeat monitoring.</p>
-            </div>
-            <div className="p-8 bg-secondary/20 border border-border/50 hover:border-primary/50 transition-all group">
-              <Cpu className="h-10 w-10 text-accent mb-6 group-hover:scale-110 transition-transform" />
-              <h3 className="text-xl font-headline font-bold mb-4">P2Net Inference</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Real-time crowd density estimation powered by NVIDIA CUDA cores for cross-verifying physical presence.</p>
-            </div>
-            <div className="p-8 bg-secondary/20 border border-border/50 hover:border-primary/50 transition-all group">
-              <Database className="h-10 w-10 text-primary mb-6 group-hover:scale-110 transition-transform" />
-              <h3 className="text-xl font-headline font-bold mb-4">Sheet Sync</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Seamless gspread background worker tasks that map local PostgreSQL logs to Google Spreadsheet cells.</p>
-            </div>
-            <div className="p-8 bg-secondary/20 border border-border/50 hover:border-primary/50 transition-all group">
-              <Activity className="h-10 w-10 text-accent mb-6 group-hover:scale-110 transition-transform" />
-              <h3 className="text-xl font-headline font-bold mb-4">Live Dashboard</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Role-specific WebSocket interfaces providing zero-latency attendance updates to Faculty and HODs.</p>
-            </div>
+        {/* Dashboard Preview Section */}
+        <section className="py-40 px-8 max-w-7xl mx-auto overflow-hidden">
+          <div className="text-center mb-24">
+            <h2 className="text-4xl md:text-6xl font-headline font-bold mb-6">INTELLIGENT COMMAND</h2>
+            <p className="text-muted-foreground uppercase text-xs tracking-[0.3em]">Operational Oversight & Analytics</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+            {/* Animated Cards */}
+            <Card className="glass border-white/10 animate-float [animation-delay:0s] hover:neon-glow transition-all">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">LIVE_STATUS</Badge>
+                  <Users className="h-5 w-5 text-emerald-500" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 uppercase">Classroom Count</h3>
+                <p className="text-4xl font-headline font-bold text-emerald-500">42/45</p>
+                <div className="mt-6 space-y-2">
+                  <div className="h-1 bg-white/5 w-full rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 w-[93%] animate-shimmer" />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground font-mono uppercase">AI_VERIFICATION: VERIFIED</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass border-white/10 animate-float [animation-delay:1.5s] hover:neon-glow transition-all">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <Badge className="bg-primary/10 text-primary border-primary/20">RFID_LOGS</Badge>
+                  <Activity className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 uppercase">Sync Activity</h3>
+                <div className="space-y-3 mt-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="flex items-center justify-between text-[10px] font-mono border-b border-white/5 pb-2">
+                      <span className="text-muted-foreground">ENTRY_NODE_0{i}</span>
+                      <span className="text-primary">10:45:2{i} AM</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass border-white/10 animate-float [animation-delay:0.7s] hover:neon-glow transition-all lg:col-span-1 md:col-span-2">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <Badge className="bg-accent/10 text-accent border-accent/20">ANALYTICS</Badge>
+                  <BarChart3 className="h-5 w-5 text-accent" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 uppercase">Dept Performance</h3>
+                <div className="flex items-end gap-2 h-20 mt-6">
+                  {[40, 70, 45, 90, 65, 80].map((h, i) => (
+                    <div 
+                      key={i} 
+                      style={{ height: `${h}%` }} 
+                      className="flex-1 bg-accent/40 hover:bg-accent transition-colors rounded-t-sm"
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </main>
 
-      <footer className="py-12 border-t border-border/50">
-        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
-          <Logo size="md" className="grayscale opacity-50" />
-          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest">
-            © 2024 Edugo Infrastructure. Internal Production Build v2.1.0-rc
-          </p>
-          <div className="flex items-center gap-6 text-muted-foreground hover:text-foreground">
-            <span className="text-xs font-mono">STATUS: ONLINE</span>
+      <footer className="py-20 border-t border-white/5 glass mt-40">
+        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="flex flex-col gap-4">
+            <Logo size="md" className="opacity-50 grayscale hover:grayscale-0 transition-all" />
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest max-w-sm">
+              Edugo Infrastructure. Next-gen institutional technology for the autonomous age.
+            </p>
+          </div>
+          <div className="flex gap-16">
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">System</h4>
+              <nav className="flex flex-col gap-2 text-[10px] text-muted-foreground uppercase font-mono">
+                <Link href="#" className="hover:text-primary transition-colors">Nodes</Link>
+                <Link href="#" className="hover:text-primary transition-colors">API Docs</Link>
+                <Link href="#" className="hover:text-primary transition-colors">Latency</Link>
+              </nav>
+            </div>
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">Security</h4>
+              <nav className="flex flex-col gap-2 text-[10px] text-muted-foreground uppercase font-mono">
+                <Link href="#" className="hover:text-primary transition-colors">Encrypted</Link>
+                <Link href="#" className="hover:text-primary transition-colors">Auth Node</Link>
+                <Link href="#" className="hover:text-primary transition-colors">Audit</Link>
+              </nav>
+            </div>
+          </div>
+          <div className="text-right flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2 text-[10px] font-mono text-emerald-500">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              STATUS: SYSTEM_OPTIMAL
+            </div>
+            <p className="text-[9px] text-muted-foreground font-mono uppercase tracking-tighter">
+              © 2024 EDUGO_CORE.PROD.BUILD_2.1.0-RC
+            </p>
           </div>
         </div>
       </footer>
