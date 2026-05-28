@@ -1,21 +1,35 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Camera, Users, Clock, ShieldCheck, Zap, ArrowRight, RefreshCw, BarChart3, Loader2 } from "lucide-react"
+import { Camera, Users, Clock, ShieldCheck, Zap, ArrowRight, RefreshCw, BarChart3, Loader2, Plus, Trash2, UserPlus, Search } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
 import { analyzeCrowd } from "@/ai/flows/analyze-crowd-flow"
+import { cn } from "@/lib/utils"
+
+interface ScanLog {
+  id: string
+  studentId: string
+  timestamp: string
+  method: 'rfid' | 'manual'
+}
 
 export default function FacultyDashboard() {
   const [isScanning, setIsScanning] = useState(false)
-  const [rfidCount, setRfidCount] = useState(38)
   const [aiCount, setAiCount] = useState(0)
   const [timeLeft, setTimeLeft] = useState(2400) // 40 minutes in seconds
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [stream, setStream] = useState<MediaStream | null>(null)
+  const [quickAddId, setQuickAddId] = useState("")
+  const [scanLogs, setScanLogs] = useState<ScanLog[]>([
+    { id: '1', studentId: 'CSE23-001', timestamp: '10:45:12 AM', method: 'rfid' },
+    { id: '2', studentId: 'CSE23-005', timestamp: '10:46:05 AM', method: 'rfid' },
+    { id: '3', studentId: 'CSE23-012', timestamp: '10:46:22 AM', method: 'manual' },
+  ])
+  
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -26,7 +40,6 @@ export default function FacultyDashboard() {
     return () => clearInterval(timer)
   }, [])
 
-  // Handle stream attachment when video element mounts
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream
@@ -53,13 +66,10 @@ export default function FacultyDashboard() {
     }
   }, [isScanning])
 
-  // Automated Scanning Loop: Runs every 10 seconds when camera is active
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (isCameraActive) {
-      // Immediate first scan
       triggerSnapshot()
-      
       interval = setInterval(() => {
         triggerSnapshot()
       }, 10000)
@@ -87,11 +97,40 @@ export default function FacultyDashboard() {
     }
   }
 
+  const handleQuickAdd = () => {
+    if (!quickAddId.trim()) return
+    
+    const newEntry: ScanLog = {
+      id: Math.random().toString(36).substring(7),
+      studentId: quickAddId.toUpperCase(),
+      timestamp: new Date().toLocaleTimeString(),
+      method: 'manual'
+    }
+    
+    setScanLogs(prev => [newEntry, ...prev])
+    setQuickAddId("")
+    toast({
+      title: "ATTENDANCE_ADDED",
+      description: `Manual entry for ${newEntry.studentId} recorded.`,
+    })
+  }
+
+  const handleDeleteScan = (id: string) => {
+    setScanLogs(prev => prev.filter(log => log.id !== id))
+    toast({
+      variant: "destructive",
+      title: "ATTENDANCE_REVOKED",
+      description: "Log entry decommissioned from session database.",
+    })
+  }
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
+
+  const rfidCount = scanLogs.length
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -120,7 +159,10 @@ export default function FacultyDashboard() {
               <Camera className="h-4 w-4 text-primary" />
               <CardTitle className="text-sm font-semibold uppercase tracking-wider">P2Net Live Inference</CardTitle>
             </div>
-            <Badge variant="outline" className={`font-mono uppercase ${isCameraActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 animate-pulse' : 'text-muted-foreground'}`}>
+            <Badge variant="outline" className={cn(
+              "font-mono uppercase transition-all duration-500",
+              isCameraActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 animate-pulse' : 'text-muted-foreground'
+            )}>
               {isCameraActive ? 'STREAM_ACTIVE' : 'FEED_IDLE'}
             </Badge>
           </CardHeader>
@@ -137,9 +179,6 @@ export default function FacultyDashboard() {
                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                  <canvas ref={canvasRef} width="640" height="480" className="hidden" />
                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
-                 <div className="absolute top-4 left-4 p-2 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[9px] font-mono text-emerald-500 uppercase">
-                   Inference: Human_Detection_Mode
-                 </div>
                  
                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                    <div className="text-center space-y-2">
@@ -178,32 +217,55 @@ export default function FacultyDashboard() {
           <Card className="bg-sidebar/30 border-sidebar-border">
             <CardHeader>
               <div className="flex items-center gap-2">
-                < ShieldCheck className="h-4 w-4 text-emerald-500" />
-                <CardTitle className="text-sm font-semibold uppercase tracking-wider">RFID Sync Status</CardTitle>
+                <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                <CardTitle className="text-sm font-semibold uppercase tracking-wider">Attendance Compliance</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-headline font-bold text-emerald-500">{rfidCount}</p>
-                  <p className="text-[10px] font-mono text-muted-foreground uppercase">SCANS_VERIFIED</p>
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase">TOTAL_VERIFIED</p>
                 </div>
                 <div className="h-10 w-10 rounded bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                   <Zap className="h-5 w-5 text-emerald-500" />
                 </div>
               </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground">Quick Add</span>
+                </div>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Enter Roll No..." 
+                    className="bg-secondary/50 border-white/5 h-8 text-xs font-mono uppercase"
+                    value={quickAddId}
+                    onChange={(e) => setQuickAddId(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
+                  />
+                  <Button size="sm" className="h-8 px-3 bg-primary" onClick={handleQuickAdd}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
               {aiCount > 0 && aiCount !== rfidCount && (
-                <div className={`p-3 rounded-lg border animate-in slide-in-from-top-2 ${aiCount > rfidCount ? 'bg-amber-500/5 border-amber-500/20' : 'bg-primary/5 border-primary/20'}`}>
+                <div className={cn(
+                  "p-3 rounded-lg border animate-in slide-in-from-top-2",
+                  aiCount > rfidCount ? 'bg-amber-500/5 border-amber-500/20' : 'bg-primary/5 border-primary/20'
+                )}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-[10px] font-bold uppercase ${aiCount > rfidCount ? 'text-amber-500' : 'text-primary'}`}>
+                    <span className={cn("text-[10px] font-bold uppercase", aiCount > rfidCount ? 'text-amber-500' : 'text-primary')}>
                       {aiCount > rfidCount ? 'Proxy Detected' : 'Unregistered Attendance'}
                     </span>
-                    <Badge variant="outline" className={`text-[9px] ${aiCount > rfidCount ? 'border-amber-500/20 text-amber-500' : 'border-primary/20 text-primary'}`}>
+                    <Badge variant="outline" className={cn("text-[9px]", aiCount > rfidCount ? 'border-amber-500/20 text-amber-500' : 'border-primary/20 text-primary')}>
                       {Math.abs(aiCount - rfidCount)} {aiCount > rfidCount ? 'PROXIES' : 'MISSING TAGS'}
                     </Badge>
                   </div>
-                  <p className="text-[9px] text-muted-foreground font-mono leading-relaxed">
-                    P2Net detected {aiCount} entities while RFID logged {rfidCount}. {aiCount > rfidCount ? 'Potential proxy attendance detected in LH-301.' : 'Some students may be in class without scanning tags.'}
+                  <p className="text-[9px] text-muted-foreground font-mono leading-relaxed uppercase">
+                    P2Net: {aiCount} | Logs: {rfidCount}
                   </p>
                 </div>
               )}
@@ -211,27 +273,40 @@ export default function FacultyDashboard() {
           </Card>
 
           <Card className="bg-sidebar/30 border-sidebar-border">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider">Live Log</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider">Live RFID Feed</CardTitle>
+              <Badge variant="outline" className="text-[8px] border-emerald-500/20 text-emerald-500 font-mono">LIVE_STREAM</Badge>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="max-h-[200px] overflow-y-auto space-y-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center justify-between px-4 py-2 hover:bg-white/5 text-[10px] font-mono">
-                    <span className="text-muted-foreground">10:45:2{i} AM</span>
-                    <span className="font-bold">STUDENT_ENTRY: {i}00{i}</span>
-                    <Badge variant="outline" className="text-[8px] border-emerald-500/20 text-emerald-500">OK</Badge>
+              <div className="max-h-[250px] overflow-y-auto divide-y divide-white/5">
+                {scanLogs.map((log) => (
+                  <div key={log.id} className="group flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold font-mono text-foreground">{log.studentId}</span>
+                        {log.method === 'manual' && (
+                          <Badge variant="outline" className="text-[8px] h-3.5 px-1 uppercase border-primary/20 text-primary">MANUAL</Badge>
+                        )}
+                      </div>
+                      <span className="text-[9px] text-muted-foreground font-mono uppercase">{log.timestamp}</span>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 transition-opacity"
+                      onClick={() => handleDeleteScan(log.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 ))}
+                {scanLogs.length === 0 && (
+                  <div className="py-10 text-center text-[10px] text-muted-foreground font-mono uppercase italic opacity-50">
+                    No activity detected in session.
+                  </div>
+                )}
               </div>
             </CardContent>
-            <CardFooter className="pt-4">
-              <Button variant="ghost" className="w-full text-[10px] uppercase font-bold text-primary" asChild>
-                <a href="/dashboard/faculty/attendance">
-                  VIEW FULL ATTENDANCE SHEET <ArrowRight className="ml-2 h-3 w-3" />
-                </a>
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </div>
