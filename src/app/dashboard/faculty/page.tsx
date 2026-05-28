@@ -1,19 +1,22 @@
-
 "use client"
 
-import { useState, useEffect } from "react"
-import { Camera, Users, Clock, ShieldCheck, Zap, ArrowRight, RefreshCw, BarChart3 } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Camera, Users, Clock, ShieldCheck, Zap, ArrowRight, RefreshCw, BarChart3, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "@/hooks/use-toast"
+import { analyzeCrowd } from "@/ai/flows/analyze-crowd-flow"
 
 export default function FacultyDashboard() {
-  const [isScanning, setIsScanning] = useState(true)
+  const [isScanning, setIsScanning] = useState(false)
   const [rfidCount, setRfidCount] = useState(38)
-  const [aiCount, setAiCount] = useState(40)
+  const [aiCount, setAiCount] = useState(0)
   const [timeLeft, setTimeLeft] = useState(2400) // 40 minutes in seconds
+  const [isCameraActive, setIsCameraActive] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -22,17 +25,54 @@ export default function FacultyDashboard() {
     return () => clearInterval(timer)
   }, [])
 
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        setIsCameraActive(true)
+      }
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "CAMERA_ERROR",
+        description: "Could not access hardware camera node.",
+      })
+    }
+  }
+
+  const triggerSnapshot = async () => {
+    if (!videoRef.current || !canvasRef.current) return
+
+    setIsScanning(true)
+    const context = canvasRef.current.getContext('2d')
+    if (context) {
+      context.drawImage(videoRef.current, 0, 0, 640, 480)
+      const dataUrl = canvasRef.current.toDataURL('image/jpeg')
+      
+      try {
+        const result = await analyzeCrowd({ imageBuffer: dataUrl })
+        setAiCount(result.count)
+        toast({
+          title: "P2NET_INFERENCE_COMPLETE",
+          description: `Detected ${result.count} individuals with ${result.confidence} confidence.`,
+        })
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "INFERENCE_FAILED",
+          description: "P2Net cloud node was unable to process the frame.",
+        })
+      } finally {
+        setIsScanning(false)
+      }
+    }
+  }
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const triggerSnapshot = () => {
-    toast({
-      title: "P2NET_SNAPSHOT_TRIGGERED",
-      description: "AI vision node is recalculating crowd density.",
-    })
   }
 
   return (
@@ -62,36 +102,56 @@ export default function FacultyDashboard() {
               <Camera className="h-4 w-4 text-primary" />
               <CardTitle className="text-sm font-semibold uppercase tracking-wider">P2Net Live Inference</CardTitle>
             </div>
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-mono animate-pulse uppercase">
-              STREAM_ACTIVE
+            <Badge variant="outline" className={`font-mono uppercase ${isCameraActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 animate-pulse' : 'text-muted-foreground'}`}>
+              {isCameraActive ? 'STREAM_ACTIVE' : 'FEED_IDLE'}
             </Badge>
           </CardHeader>
-          <CardContent className="p-0 aspect-video bg-black/40 relative group">
-             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]" />
-             <div className="absolute top-4 left-4 p-2 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[9px] font-mono text-emerald-500 uppercase">
-               Inference: Human_Detection_Mode
-             </div>
-             
-             {/* Simulated Bounding Boxes */}
-             <div className="absolute top-[20%] left-[30%] w-12 h-20 border border-emerald-500/50 bg-emerald-500/10" />
-             <div className="absolute top-[25%] left-[45%] w-12 h-20 border border-emerald-500/50 bg-emerald-500/10" />
-             <div className="absolute top-[15%] left-[60%] w-12 h-20 border border-emerald-500/50 bg-emerald-500/10" />
-
-             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="text-center space-y-2">
-                 <p className="text-4xl font-headline font-bold text-white tracking-tighter">{aiCount}</p>
-                 <p className="text-[10px] font-mono text-white/60 uppercase tracking-widest">AI_HEAD_COUNT</p>
+          <CardContent className="p-0 aspect-video bg-black/40 relative group flex items-center justify-center">
+             {!isCameraActive ? (
+               <div className="text-center space-y-4">
+                 <Camera className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+                 <Button onClick={startCamera} variant="outline" className="text-[10px] uppercase font-bold tracking-widest border-white/10">
+                   INITIALIZE VISION NODE
+                 </Button>
                </div>
-             </div>
+             ) : (
+               <>
+                 <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                 <canvas ref={canvasRef} width="640" height="480" className="hidden" />
+                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
+                 <div className="absolute top-4 left-4 p-2 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[9px] font-mono text-emerald-500 uppercase">
+                   Inference: Human_Detection_Mode
+                 </div>
+                 
+                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                   <div className="text-center space-y-2">
+                     {isScanning ? (
+                       <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                     ) : (
+                       <>
+                         <p className="text-5xl font-headline font-bold text-white tracking-tighter shadow-xl">{aiCount || "--"}</p>
+                         <p className="text-[10px] font-mono text-white/60 uppercase tracking-widest">AI_HEAD_COUNT</p>
+                       </>
+                     )}
+                   </div>
+                 </div>
+               </>
+             )}
           </CardContent>
           <CardFooter className="bg-secondary/20 py-4 flex justify-between items-center px-6">
-            <Button variant="outline" size="sm" className="bg-background/50 border-white/5 text-[10px] uppercase font-bold" onClick={triggerSnapshot}>
-              <RefreshCw className="mr-2 h-3 w-3" />
-              REFRESH AI SNAPSHOT
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-background/50 border-white/5 text-[10px] uppercase font-bold" 
+              onClick={triggerSnapshot}
+              disabled={!isCameraActive || isScanning}
+            >
+              {isScanning ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-2 h-3 w-3" />}
+              TRIGGER P2NET SCAN
             </Button>
             <div className="flex gap-4">
-              <span className="text-[10px] font-mono text-muted-foreground uppercase">GPU_LOAD: 64%</span>
-              <span className="text-[10px] font-mono text-muted-foreground uppercase">LATENCY: 12ms</span>
+              <span className="text-[10px] font-mono text-muted-foreground uppercase">GPU_LOAD: {isScanning ? '92%' : '12%'}</span>
+              <span className="text-[10px] font-mono text-muted-foreground uppercase">LATENCY: {isScanning ? '240ms' : '--'}</span>
             </div>
           </CardFooter>
         </Card>
@@ -114,15 +174,21 @@ export default function FacultyDashboard() {
                   <Zap className="h-5 w-5 text-emerald-500" />
                 </div>
               </div>
-              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold text-amber-500 uppercase">Sync Mismatch</span>
-                  <Badge variant="outline" className="text-[9px] border-amber-500/20 text-amber-500">+{aiCount - rfidCount} PROXIES</Badge>
+              {aiCount > 0 && aiCount !== rfidCount && (
+                <div className={`p-3 rounded-lg border animate-in slide-in-from-top-2 ${aiCount > rfidCount ? 'bg-amber-500/5 border-amber-500/20' : 'bg-primary/5 border-primary/20'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[10px] font-bold uppercase ${aiCount > rfidCount ? 'text-amber-500' : 'text-primary'}`}>
+                      {aiCount > rfidCount ? 'Proxy Detected' : 'Unregistered Attendance'}
+                    </span>
+                    <Badge variant="outline" className={`text-[9px] ${aiCount > rfidCount ? 'border-amber-500/20 text-amber-500' : 'border-primary/20 text-primary'}`}>
+                      {Math.abs(aiCount - rfidCount)} {aiCount > rfidCount ? 'PROXIES' : 'MISSING TAGS'}
+                    </Badge>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground font-mono leading-relaxed">
+                    P2Net detected {aiCount} entities while RFID logged {rfidCount}. {aiCount > rfidCount ? 'Potential proxy attendance detected in LH-301.' : 'Some students may be in class without scanning tags.'}
+                  </p>
                 </div>
-                <p className="text-[9px] text-muted-foreground font-mono leading-relaxed">
-                  P2Net detected {aiCount} entities while RFID logged {rfidCount}. Proxies might be present or RFID tags missing.
-                </p>
-              </div>
+              )}
             </CardContent>
           </Card>
 

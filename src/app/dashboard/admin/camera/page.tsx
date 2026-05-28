@@ -1,8 +1,7 @@
-
 "use client"
 
-import { useState } from "react"
-import { Camera, Laptop, Usb, Smartphone, Radio, Settings2, RefreshCw } from "lucide-react"
+import { useState, useRef } from "react"
+import { Camera, Laptop, Usb, Smartphone, Radio, Settings2, RefreshCw, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -16,10 +15,56 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
+import { analyzeCrowd } from "@/ai/flows/analyze-crowd-flow"
 
 export default function AdminCamera() {
   const [source, setSource] = useState("laptop")
   const [rtspUrl, setRtspUrl] = useState("")
+  const [isCameraActive, setIsCameraActive] = useState(false)
+  const [isInferenceActive, setIsInferenceActive] = useState(false)
+  const [lastCount, setLastCount] = useState<number | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  const startNode = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        setIsCameraActive(true)
+        toast({
+          title: "VISION_NODE_INITIALIZED",
+          description: "Hardware capture stream established.",
+        })
+      }
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "CAPTURE_FAILED",
+        description: "Could not initialize hardware camera node.",
+      })
+    }
+  }
+
+  const runDiagnostics = async () => {
+    if (!videoRef.current || !canvasRef.current) return
+
+    setIsInferenceActive(true)
+    const context = canvasRef.current.getContext('2d')
+    if (context) {
+      context.drawImage(videoRef.current, 0, 0, 640, 480)
+      const dataUrl = canvasRef.current.toDataURL('image/jpeg')
+      
+      try {
+        const result = await analyzeCrowd({ imageBuffer: dataUrl })
+        setLastCount(result.count)
+      } catch (error) {
+        console.error("Inference Error:", error)
+      } finally {
+        setIsInferenceActive(false)
+      }
+    }
+  }
 
   const handleSave = () => {
     toast({
@@ -82,20 +127,17 @@ export default function AdminCamera() {
                   value={rtspUrl}
                   onChange={(e) => setRtspUrl(e.target.value)}
                 />
-                <p className="text-[9px] text-muted-foreground font-mono italic">
-                  Note: Mobile node must be on the same local network as the compute cluster.
-                </p>
               </div>
             )}
 
             <div className="p-4 bg-primary/5 border border-primary/10 rounded-lg">
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 flex items-center gap-2">
-                <Radio className="h-3 w-3" /> System Diagnostics
+                <Radio className="h-3 w-3" /> P2Net Cloud Diagnostics
               </h4>
               <ul className="space-y-1 text-[10px] font-mono text-muted-foreground">
                 <li className="flex justify-between"><span>LINK_STABILITY</span> <span className="text-emerald-500">EXCELLENT</span></li>
-                <li className="flex justify-between"><span>INFERENCE_LATENCY</span> <span>12.4ms</span></li>
-                <li className="flex justify-between"><span>FRAME_BUFFER</span> <span>SYNCED</span></li>
+                <li className="flex justify-between"><span>LAST_INFERENCE_COUNT</span> <span>{lastCount ?? '--'} entities</span></li>
+                <li className="flex justify-between"><span>NODE_SYNC</span> <span>{isCameraActive ? 'CONNECTED' : 'DISCONNECTED'}</span></li>
               </ul>
             </div>
           </CardContent>
@@ -109,36 +151,57 @@ export default function AdminCamera() {
         <Card className="bg-sidebar/30 border-sidebar-border overflow-hidden">
           <CardHeader className="bg-secondary/20 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-semibold uppercase tracking-wider">Infrastructure Preview</CardTitle>
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-mono animate-pulse uppercase">
-              FEED_ACTIVE
+            <Badge variant="outline" className={`font-mono uppercase ${isCameraActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 animate-pulse' : ''}`}>
+              {isCameraActive ? 'FEED_ACTIVE' : 'FEED_OFFLINE'}
             </Badge>
           </CardHeader>
-          <CardContent className="p-0 aspect-video relative flex items-center justify-center bg-black/40 group cursor-pointer">
-            <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity bg-[radial-gradient(circle_at_center,var(--primary)_0%,transparent_100%)]" />
-            <div className="flex flex-col items-center gap-4 relative z-10 text-center">
-              <Camera className="h-12 w-12 text-muted-foreground opacity-20" />
-              <div className="space-y-1">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initializing Vision Node...</p>
-                <p className="text-[10px] text-muted-foreground/60 font-mono">Source: {source.toUpperCase()}</p>
+          <CardContent className="p-0 aspect-video relative flex items-center justify-center bg-black/40 group overflow-hidden">
+            {!isCameraActive ? (
+              <div className="flex flex-col items-center gap-4 relative z-10 text-center">
+                <Camera className="h-12 w-12 text-muted-foreground opacity-20" />
+                <div className="space-y-1">
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Node Offline</p>
+                  <p className="text-[10px] text-muted-foreground/60 font-mono">Source: {source.toUpperCase()}</p>
+                </div>
+                <Button variant="outline" size="sm" className="bg-secondary/50 border-white/5 mt-4" onClick={startNode}>
+                  INITIALIZE FEED
+                </Button>
               </div>
-              <Button variant="outline" size="sm" className="bg-secondary/50 border-white/5 mt-4">
-                <RefreshCw className="mr-2 h-3 w-3" />
-                REBOOT FEED
-              </Button>
-            </div>
+            ) : (
+              <>
+                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                <canvas ref={canvasRef} width="640" height="480" className="hidden" />
+                <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+                {isInferenceActive && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                )}
+                {lastCount !== null && !isInferenceActive && (
+                  <div className="absolute bottom-4 right-4 bg-primary/80 backdrop-blur-md px-3 py-1 rounded text-white font-bold text-lg font-mono">
+                    COUNT: {lastCount}
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
           <CardFooter className="bg-secondary/20 py-4 flex justify-between items-center px-6">
             <div className="flex gap-4">
               <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span className="text-[10px] font-mono text-muted-foreground uppercase">FPS: 24.0</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                <span className="text-[10px] font-mono text-muted-foreground uppercase">RES: 1080P</span>
+                <div className={`h-1.5 w-1.5 rounded-full ${isCameraActive ? 'bg-emerald-500' : 'bg-destructive'}`} />
+                <span className="text-[10px] font-mono text-muted-foreground uppercase">NODE_ID: PRC-CAM-7281</span>
               </div>
             </div>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-tighter">NODE_ID: CAM-7281-PRC</span>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="text-[10px] uppercase font-bold" 
+              onClick={runDiagnostics}
+              disabled={!isCameraActive || isInferenceActive}
+            >
+              {isInferenceActive ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <RefreshCw className="h-3 w-3 mr-2" />}
+              RUN P2NET DIAGNOSTIC
+            </Button>
           </CardFooter>
         </Card>
       </div>
