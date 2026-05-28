@@ -17,7 +17,9 @@ import {
   UserCheck,
   Activity,
   History,
-  GraduationCap
+  GraduationCap,
+  ClipboardList,
+  FileText
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -73,10 +75,10 @@ export function NavMain({ role }: NavMainProps) {
       { title: "Reports", url: "/dashboard/faculty/reports", icon: FileSpreadsheet },
     ],
     student: [
-      { title: "My Attendance", url: "/dashboard/student", icon: LayoutDashboard },
-      { title: "Subject Wise", url: "/dashboard/student/subjects", icon: ClipboardCheck },
-      { title: "Timetable", url: "/dashboard/student/timetable", icon: Calendar },
-      { title: "Notifications", url: "/dashboard/student/notifications", icon: MessageSquare },
+      { title: "My Terminal", url: "/dashboard/student", icon: LayoutDashboard },
+      { title: "Attendance Logs", url: "/dashboard/student", icon: ClipboardCheck },
+      { title: "Leave Portal", url: "/dashboard/student", icon: FileText },
+      { title: "Active Surveys", url: "/dashboard/student", icon: ClipboardList },
     ]
   }
 
@@ -89,9 +91,9 @@ export function NavMain({ role }: NavMainProps) {
           Terminal Access
         </SidebarGroupLabel>
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.url}>
-              <SidebarMenuButton asChild isActive={pathname === item.url}>
+          {items.map((item, idx) => (
+            <SidebarMenuItem key={`${item.url}-${idx}`}>
+              <SidebarMenuButton asChild isActive={pathname === item.url && idx === 0}>
                 <Link href={item.url}>
                   <item.icon className="h-4 w-4" />
                   <span>{item.title}</span>

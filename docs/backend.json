@@ -51,6 +51,18 @@
         "reviewedBy": { "type": "string", "description": "UID of the HOD who reviewed the request" }
       }
     },
+    "Survey": {
+      "title": "Survey",
+      "description": "Academic or institutional surveys for students.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "expiryDate": { "type": "string", "format": "date" },
+        "isActive": { "type": "boolean" }
+      }
+    },
     "Department": {
       "title": "Department",
       "description": "Academic department metadata.",
@@ -77,6 +89,10 @@
     "/leave_requests/{requestId}": {
       "schema": "LeaveRequest",
       "description": "Leave applications for faculty/HOD review."
+    },
+    "/surveys/{surveyId}": {
+      "schema": "Survey",
+      "description": "Active institutional surveys."
     },
     "/departments/{deptId}": {
       "schema": "Department",
