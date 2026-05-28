@@ -1,27 +1,22 @@
 
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { Activity, ShieldCheck, Database, Camera, Cpu, Users, Eye, Loader2, CheckCircle2, AlertTriangle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Activity, ShieldCheck, Database, Cpu, Users, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { LiveScanLog } from "@/components/dashboard/live-scan-log"
 import { AttendanceStats } from "@/components/dashboard/attendance-stats"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
-import { analyzeCrowd } from "@/ai/flows/analyze-crowd-flow"
-import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 export default function AdminDashboard() {
-  const [isCameraActive, setIsCameraActive] = useState(false)
-  const [isInferenceActive, setIsInferenceActive] = useState(false)
-  const [aiDetectedCount, setAiDetectedCount] = useState<number>(0)
-  const [rfidCount, setRfidCount] = useState(468)
-  
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [stream, setStream] = useState<MediaStream | null>(null)
+  const [census, setCensus] = useState({
+    aiCount: 472,
+    rfidCount: 468,
+    lastSync: "2 seconds ago",
+    status: "mismatch"
+  })
 
   const [metrics, setMetrics] = useState([
     { label: "CPU Usage", value: "14%", icon: Cpu, color: "text-blue-500", status: "Optimal" },
@@ -30,82 +25,26 @@ export default function AdminDashboard() {
     { label: "Active RFID", value: "4 Nodes", icon: ShieldCheck, color: "text-purple-500", status: "Connected" },
   ])
 
+  // Simulation of live updates for institutional counts
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream
-    }
-  }, [stream, isCameraActive])
+    const interval = setInterval(() => {
+      setCensus(prev => ({
+        ...prev,
+        aiCount: prev.aiCount + (Math.random() > 0.6 ? 1 : Math.random() < 0.4 ? -1 : 0),
+        lastSync: "Just now"
+      }))
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
-  const runGlobalInference = useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current || isInferenceActive) return
-
-    setIsInferenceActive(true)
-    const context = canvasRef.current.getContext('2d')
-    if (context) {
-      context.drawImage(videoRef.current, 0, 0, 640, 480)
-      const dataUrl = canvasRef.current.toDataURL('image/jpeg')
-      
-      try {
-        const result = await analyzeCrowd({ imageBuffer: dataUrl })
-        setAiDetectedCount(result.count)
-        setMetrics(prev => prev.map(m => 
-          m.label === "GPU Load" ? { ...m, value: "88%", status: "Inference Active" } : m
-        ))
-        setTimeout(() => {
-          setMetrics(prev => prev.map(m => 
-            m.label === "GPU Load" ? { ...m, value: "12%", status: "Idle" } : m
-          ))
-        }, 2000)
-      } catch (error: any) {
-        console.error("Inference Error:", error)
-        toast({
-          variant: "destructive",
-          title: "INFERENCE_ERROR",
-          description: error.message || "Failed to process P2Net vision data.",
-        })
-      } finally {
-        setIsInferenceActive(false)
-      }
-    }
-  }, [isInferenceActive])
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isCameraActive) {
-      runGlobalInference()
-      interval = setInterval(runGlobalInference, 10000)
-    }
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isCameraActive, runGlobalInference])
-
-  const startGlobalNode = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
-      setStream(mediaStream)
-      setIsCameraActive(true)
-      toast({
-        title: "GLOBAL_VISION_ACTIVE",
-        description: "P2Net core is now processing real-time census data.",
-      })
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "INITIALIZATION_FAILED",
-        description: "Could not establish connection to hardware vision node.",
-      })
-    }
-  }
-
-  const isMatched = aiDetectedCount === rfidCount && aiDetectedCount > 0
-  const isMismatch = aiDetectedCount !== rfidCount && aiDetectedCount > 0
+  const isMatched = census.aiCount === census.rfidCount
+  const diff = Math.abs(census.aiCount - census.rfidCount)
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-headline font-bold tracking-tight uppercase text-glow">System Infrastructure</h1>
-        <p className="text-muted-foreground uppercase text-[10px] font-mono tracking-[0.2em]">Global monitoring for RFID nodes and P2Net compute cluster.</p>
+        <p className="text-muted-foreground uppercase text-[10px] font-mono tracking-[0.2em]">Institutional monitoring for RFID nodes and P2Net compute cluster.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -132,125 +71,103 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 space-y-8">
-          <Card className="bg-primary/5 border-primary/20 neon-border overflow-hidden relative">
-            <CardHeader className="border-b border-primary/10 bg-black/20 backdrop-blur-sm z-10 relative">
+          {/* Streamlined Institutional Census Overview */}
+          <Card className="bg-sidebar/30 border-sidebar-border overflow-hidden relative group border-primary/10">
+            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Users className="h-48 w-48" />
+            </div>
+            <CardHeader className="border-b border-white/5 bg-secondary/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Eye className={cn("h-4 w-4 text-primary", isCameraActive && "animate-pulse")} />
-                  <CardTitle className="text-sm font-semibold uppercase tracking-wider">Live System Census</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-sm font-semibold uppercase tracking-wider">Institutional Census Overview</CardTitle>
                 </div>
-                <Badge variant={isCameraActive ? "default" : "outline"} className={cn("font-mono text-[10px]", isCameraActive && "bg-primary animate-pulse")}>
-                  {isCameraActive ? "LIVE_STREAM_ACTIVE" : "STREAM_OFFLINE"}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="font-mono text-[10px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                    LIVE_FEED
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
-            <CardContent className="p-0 relative h-[450px] flex items-center justify-center bg-black/40">
-              {!isCameraActive ? (
-                <div className="text-center space-y-6 z-10 px-8">
-                  <Camera className="h-16 w-16 text-muted-foreground/20 mx-auto" />
-                  <div className="space-y-2">
-                    <p className="text-xl font-headline font-bold uppercase tracking-tighter">Node Connection Required</p>
-                    <p className="text-sm text-muted-foreground font-mono uppercase">Initialize P2Net Vision Node to see real-time data.</p>
-                  </div>
-                  <Button onClick={startGlobalNode} className="bg-primary font-bold shadow-lg shadow-primary/20 h-12 px-8">
-                    INITIALIZE INFRASTRUCTURE
-                  </Button>
-                </div>
-              ) : (
-                <div className="absolute inset-0 flex flex-col md:flex-row">
-                  <div className="md:w-1/2 h-1/2 md:h-full relative border-b md:border-b-0 md:border-r border-white/5 bg-black">
-                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover opacity-60" />
-                    <canvas ref={canvasRef} width="640" height="480" className="hidden" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-primary/10 pointer-events-none" />
-                    {isInferenceActive && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="space-y-10">
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
+                        <Cpu className="h-3 w-3 text-primary" /> P2Net AI Count
                       </div>
-                    )}
-                    <div className="absolute top-4 left-4">
-                      <Badge variant="outline" className="bg-black/60 backdrop-blur-md border-primary/20 text-primary text-[10px] font-mono">
-                        P2NET_INFERENCE_ENGINE
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <div className="md:w-1/2 h-1/2 md:h-full p-8 flex flex-col justify-center bg-black/60 backdrop-blur-md space-y-8">
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-8">
-                        <div className="space-y-2">
-                          <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
-                            <Users className="h-3 w-3 text-primary" /> AI Count
-                          </div>
-                          <p className="text-5xl font-headline font-bold text-primary tracking-tighter">
-                            {aiDetectedCount || '--'}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
-                            <ShieldCheck className="h-3 w-3" /> RFID Count
-                          </div>
-                          <p className="text-5xl font-headline font-bold text-white tracking-tighter">
-                            {rfidCount}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="h-px bg-white/5" />
-
-                      <div className="space-y-4">
-                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest">
-                          Synchronization Status
-                        </div>
-                        
-                        {isCameraActive && !isInferenceActive ? (
-                          <div className={cn(
-                            "p-4 rounded-lg border flex items-center gap-4 transition-all duration-500",
-                            isMatched ? "bg-emerald-500/10 border-emerald-500/20" : 
-                            isMismatch ? "bg-amber-500/10 border-amber-500/20" : 
-                            "bg-secondary/30 border-white/5"
-                          )}>
-                            {isMatched ? (
-                              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-                            ) : (
-                              <AlertTriangle className="h-8 w-8 text-amber-500" />
-                            )}
-                            <div>
-                              <p className={cn(
-                                "text-sm font-bold uppercase",
-                                isMatched ? "text-emerald-500" : "text-amber-500"
-                              )}>
-                                {isMatched ? "Data Synchronized" : "Count Mismatch Detected"}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground font-mono uppercase">
-                                {isMatched ? "AI count matches active RFID tags." : `Difference: ${Math.abs(aiDetectedCount - rfidCount)} entities detected.`}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="p-4 rounded-lg border bg-secondary/30 border-white/5 flex items-center gap-4 opacity-50">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            <div>
-                              <p className="text-sm font-bold uppercase text-muted-foreground italic">Performing Analysis...</p>
-                              <p className="text-[10px] text-muted-foreground font-mono uppercase">Calculating P2Net head counts.</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      <p className="text-7xl font-headline font-bold text-primary tracking-tighter">
+                        {census.aiCount}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-mono uppercase">Vision nodes active</p>
                     </div>
 
-                    <div className="space-y-2 pt-4">
-                      <div className="flex items-center gap-2 text-[10px] text-emerald-500 font-mono">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        P2Net Node Sync Active
+                    <div className="space-y-2">
+                      <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest flex items-center gap-2">
+                        <ShieldCheck className="h-3 w-3 text-emerald-500" /> RFID Verified
                       </div>
-                      <p className="text-[9px] text-muted-foreground font-mono uppercase leading-none opacity-50">
-                        Institutional Node ID: PRC-ETH-001
+                      <p className="text-7xl font-headline font-bold text-white tracking-tighter">
+                        {census.rfidCount}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-mono uppercase">Decentralized logs</p>
+                    </div>
+                  </div>
+
+                  <div className={cn(
+                    "p-6 rounded-xl border flex items-center gap-6 transition-all duration-500",
+                    isMatched ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/20"
+                  )}>
+                    <div className={cn(
+                      "h-14 w-14 rounded-full flex items-center justify-center shrink-0",
+                      isMatched ? "bg-emerald-500 text-white" : "bg-amber-500 text-black"
+                    )}>
+                      {isMatched ? <CheckCircle2 className="h-8 w-8" /> : <AlertTriangle className="h-8 w-8" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className={cn(
+                        "text-lg font-bold uppercase tracking-tight",
+                        isMatched ? "text-emerald-500" : "text-amber-500"
+                      )}>
+                        {isMatched ? "Data Synchronized" : "Census Discrepancy"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-mono uppercase leading-relaxed">
+                        {isMatched 
+                          ? "Vision counts align with physical RFID tokens." 
+                          : `Mismatch of ${diff} entities detected across active campus nodes.`}
                       </p>
                     </div>
                   </div>
                 </div>
-              )}
+
+                <div className="flex flex-col justify-center space-y-8 border-l border-white/5 pl-10">
+                   <div className="space-y-3">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                        <span>Active Departments</span>
+                        <span className="text-white">7 Units</span>
+                      </div>
+                      <Progress value={100} className="h-1 bg-white/5" />
+                   </div>
+                   <div className="space-y-3">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                        <span>Cluster Stability</span>
+                        <span className="text-emerald-500">99.8%</span>
+                      </div>
+                      <Progress value={99.8} className="h-1 bg-white/5" />
+                   </div>
+                   <div className="space-y-3">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                        <span>System Load</span>
+                        <span>24%</span>
+                      </div>
+                      <Progress value={24} className="h-1 bg-white/5" />
+                   </div>
+                   <div className="pt-4 flex items-center gap-2 text-[10px] font-mono text-emerald-500 uppercase">
+                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                     P2Net Node Sync Active | {census.lastSync}
+                   </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
