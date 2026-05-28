@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -71,7 +70,6 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 space-y-8">
-          {/* Streamlined Institutional Census Overview */}
           <Card className="bg-sidebar/30 border-sidebar-border overflow-hidden relative group border-primary/10">
             <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
               <Users className="h-48 w-48" />
@@ -80,7 +78,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-sm font-semibold uppercase tracking-wider">Institutional Census Overview</CardTitle>
+                  <CardTitle className="text-sm font-semibold uppercase tracking-wider">Class Count</CardTitle>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="font-mono text-[10px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
@@ -131,11 +129,11 @@ export default function AdminDashboard() {
                       )}>
                         {isMatched ? "Data Synchronized" : "Census Discrepancy"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-mono uppercase leading-relaxed">
+                      <div className="text-[10px] text-muted-foreground font-mono uppercase leading-relaxed">
                         {isMatched 
                           ? "Vision counts align with physical RFID tokens." 
                           : `Mismatch of ${diff} entities detected across active campus nodes.`}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
