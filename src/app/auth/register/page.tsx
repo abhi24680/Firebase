@@ -44,7 +44,7 @@ const baseSchema = z.object({
 export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [role, setRole] = useState<"student" | "faculty" | "hod">("student")
+  const [role, setRole] = useState<"student" | "faculty" | "hod" | "advisor">("student")
 
   const form = useForm<z.infer<typeof baseSchema> & any>({
     resolver: zodResolver(baseSchema),
@@ -58,6 +58,7 @@ export default function RegisterPage() {
       semester: "",
       subject: "",
       designation: "",
+      assignedBatch: "",
     },
   })
 
@@ -82,29 +83,30 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="student" onValueChange={(v) => setRole(v as any)}>
-            <TabsList className="grid w-full grid-cols-3 mb-8 bg-secondary">
-              <TabsTrigger value="student">STUDENT</TabsTrigger>
-              <TabsTrigger value="faculty">FACULTY</TabsTrigger>
-              <TabsTrigger value="hod">HOD</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary h-auto py-1">
+              <TabsTrigger value="student" className="text-[10px] sm:text-xs">STUDENT</TabsTrigger>
+              <TabsTrigger value="faculty" className="text-[10px] sm:text-xs">FACULTY</TabsTrigger>
+              <TabsTrigger value="advisor" className="text-[10px] sm:text-xs">ADVISOR</TabsTrigger>
+              <TabsTrigger value="hod" className="text-[10px] sm:text-xs">HOD</TabsTrigger>
             </TabsList>
 
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="fullName" render={({ field }) => (
-                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
-                    <FormItem><FormLabel>College Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>College Email</FormLabel><FormControl><Input {...field} placeholder="user@college.edu" className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="password" render={({ field }) => (
-                    <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-                    <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
 
@@ -112,7 +114,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>Department</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select Dept" /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger className="bg-secondary/50"><SelectValue placeholder="Select Dept" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                       </SelectContent>
@@ -124,13 +126,13 @@ export default function RegisterPage() {
                 {role === "student" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="rollNumber" render={({ field }) => (
-                      <FormItem><FormLabel>Roll Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Roll Number</FormLabel><FormControl><Input {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="semester" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Semester</FormLabel>
                         <Select onValueChange={field.onChange}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Select Sem" /></SelectTrigger></FormControl>
+                          <FormControl><SelectTrigger className="bg-secondary/50"><SelectValue placeholder="Select Sem" /></SelectTrigger></FormControl>
                           <SelectContent>{[1,2,3,4,5,6,7,8].map(s => <SelectItem key={s} value={s.toString()}>Sem {s}</SelectItem>)}</SelectContent>
                         </Select>
                       </FormItem>
@@ -140,13 +142,19 @@ export default function RegisterPage() {
 
                 {role === "faculty" && (
                   <FormField control={form.control} name="subject" render={({ field }) => (
-                    <FormItem><FormLabel>Primary Subject</FormLabel><FormControl><Input placeholder="e.g. Data Structures" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Primary Subject</FormLabel><FormControl><Input placeholder="e.g. Data Structures" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
+                  )} />
+                )}
+
+                {role === "advisor" && (
+                  <FormField control={form.control} name="assignedBatch" render={({ field }) => (
+                    <FormItem><FormLabel>Assigned Batch/Class</FormLabel><FormControl><Input placeholder="e.g. CSE 2021-25 A" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                   )} />
                 )}
 
                 {role === "hod" && (
                   <FormField control={form.control} name="designation" render={({ field }) => (
-                    <FormItem><FormLabel>Designation</FormLabel><FormControl><Input placeholder="e.g. Professor & Head" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Designation</FormLabel><FormControl><Input placeholder="e.g. Professor & Head" {...field} className="bg-secondary/50" /></FormControl><FormMessage /></FormItem>
                   )} />
                 )}
 

@@ -9,7 +9,7 @@
         "uid": { "type": "string" },
         "fullName": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "role": { "type": "string", "enum": ["student", "faculty", "hod", "admin"] },
+        "role": { "type": "string", "enum": ["student", "faculty", "hod", "admin", "advisor"] },
         "department": { "type": "string", "enum": ["CSE", "ECE", "ME", "CE", "EEE"] },
         "isApproved": { "type": "boolean" },
         "collegeName": { "type": "string" },
@@ -17,6 +17,7 @@
         "semester": { "type": "string", "description": "Student only" },
         "subject": { "type": "string", "description": "Faculty only" },
         "designation": { "type": "string", "description": "HOD only" },
+        "assignedBatch": { "type": "string", "description": "Advisor only" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "fullName", "email", "role", "department"]

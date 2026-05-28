@@ -23,12 +23,13 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   // Demo role state - in a real app, this would come from an auth hook
-  const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student'>('admin')
+  const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student' | 'advisor'>('admin')
   const router = useRouter()
 
   const handleRoleChange = (newRole: string) => {
     setRole(newRole as any)
-    router.push(`/dashboard/${newRole === 'admin' ? 'admin' : newRole}`)
+    const route = newRole === 'admin' ? 'admin' : newRole
+    router.push(`/dashboard/${route}`)
   }
 
   return (
@@ -48,7 +49,7 @@ export default function DashboardLayout({
                 <User className="h-5 w-5 text-accent" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-semibold truncate uppercase">Root System</p>
+                <p className="text-sm font-semibold truncate uppercase">Active Node</p>
                 <p className="text-xs text-muted-foreground truncate uppercase font-mono tracking-tighter">
                   {role}-NODE-01
                 </p>
@@ -81,6 +82,7 @@ export default function DashboardLayout({
                 >
                   <option value="admin">Admin</option>
                   <option value="hod">HOD</option>
+                  <option value="advisor">Advisor</option>
                   <option value="faculty">Faculty</option>
                   <option value="student">Student</option>
                 </select>

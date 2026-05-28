@@ -16,7 +16,8 @@ import {
   LogOut,
   UserCheck,
   Activity,
-  History
+  History,
+  GraduationCap
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -35,7 +36,7 @@ interface NavItem {
 }
 
 interface NavMainProps {
-  role: 'admin' | 'hod' | 'faculty' | 'student'
+  role: 'admin' | 'hod' | 'faculty' | 'student' | 'advisor'
 }
 
 export function NavMain({ role }: NavMainProps) {
@@ -56,6 +57,13 @@ export function NavMain({ role }: NavMainProps) {
       { title: "Subject Mapping", url: "/dashboard/hod/mapping", icon: Building2 },
       { title: "Messages", url: "/dashboard/hod/messages", icon: MessageSquare },
       { title: "All Attendance", url: "/dashboard/hod/attendance", icon: ClipboardCheck },
+    ],
+    advisor: [
+      { title: "Batch Overview", url: "/dashboard/advisor", icon: LayoutDashboard },
+      { title: "Student Directory", url: "/dashboard/advisor/students", icon: Users },
+      { title: "Batch Attendance", url: "/dashboard/advisor/attendance", icon: ClipboardCheck },
+      { title: "Performance", url: "/dashboard/advisor/performance", icon: Activity },
+      { title: "Communications", url: "/dashboard/advisor/messages", icon: MessageSquare },
     ],
     faculty: [
       { title: "Active Session", url: "/dashboard/faculty", icon: Activity },
