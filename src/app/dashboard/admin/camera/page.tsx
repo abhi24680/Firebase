@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -65,8 +64,17 @@ export default function AdminCamera() {
       try {
         const result = await analyzeCrowd({ imageBuffer: dataUrl })
         setLastCount(result.count)
-      } catch (error) {
+        toast({
+          title: "DIAGNOSTIC_COMPLETE",
+          description: `P2Net inference successful. Detected ${result.count} entities.`,
+        })
+      } catch (error: any) {
         console.error("Inference Error:", error)
+        toast({
+          variant: "destructive",
+          title: "INFERENCE_NODE_ERROR",
+          description: error.message || "Failed to process visual data. Check API configuration.",
+        })
       } finally {
         setIsInferenceActive(false)
       }
