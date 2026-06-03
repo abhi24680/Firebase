@@ -262,13 +262,6 @@ export default function LandingPage() {
                   <blockquote className="text-2xl font-headline font-bold italic text-white leading-tight">
                     "We don't just count students; we enable institutional intelligence by bridging the gap between physical presence and digital records."
                   </blockquote>
-                  <div className="flex items-center gap-4 border-t border-white/5 pt-8">
-                    <div className="h-10 w-10 rounded-full bg-secondary" />
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest">Dr. Alan Turing</p>
-                      <p className="text-[10px] font-mono text-muted-foreground">Chief Infrastructure Architect</p>
-                    </div>
-                  </div>
                 </div>
               </Card>
             </div>
