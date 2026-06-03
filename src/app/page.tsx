@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, BarChart3, Users, Network, Code2, Globe, History, Lightbulb, Rocket } from "lucide-react"
+import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, BarChart3, Users, Network, Code2, Globe, History, Lightbulb, Rocket, Eye, Target } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -156,39 +156,74 @@ export default function LandingPage() {
 
         {/* About Our Journey Section */}
         <section id="journey" className="py-40 bg-sidebar/10 relative">
-          <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-10">
-              <div className="space-y-4">
-                <Badge className="bg-accent/10 text-accent border-accent/20 font-mono text-[10px] tracking-widest uppercase">OUR_MISSION</Badge>
-                <h2 className="text-5xl md:text-7xl font-headline font-bold leading-tight uppercase">About Our Journey</h2>
-              </div>
-              <div className="space-y-6 text-muted-foreground text-sm uppercase font-mono tracking-tight leading-relaxed">
-                <p>
-                  Edugo was born from a singular vision: to eliminate the friction of institutional administrative overhead. What started as a simple RFID experimental node has evolved into a comprehensive institutional mesh.
-                </p>
-                <p>
-                  Our journey has been defined by the pursuit of "Invisible Automation." We believe that technology should serve the educational experience, not distract from it. By automating presence verification, we reclaim valuable instructional time for both students and faculty.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-white/5">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-primary">
-                      <History className="h-4 w-4" />
-                      <span className="text-[10px] font-bold tracking-widest">ORIGIN_2023</span>
+          <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+            <div className="space-y-12">
+              {/* About EDUGO with Vision and Mission */}
+              <div className="space-y-6">
+                <Badge className="bg-primary/10 text-primary border-primary/20 font-mono text-[10px] tracking-widest uppercase">ABOUT_EDUGO</Badge>
+                <h2 className="text-5xl md:text-6xl font-headline font-bold leading-tight uppercase">Our Vision & Mission</h2>
+                
+                <div className="grid gap-8 pt-4">
+                  <div className="flex gap-4 items-start group">
+                    <div className="h-10 w-10 shrink-0 rounded bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-primary group-hover:text-white transition-colors">
+                      <Eye className="h-5 w-5" />
                     </div>
-                    <p className="text-[10px]">Pioneered decentralized RFID scanning protocols in single-department pilots.</p>
+                    <div>
+                      <h4 className="text-[12px] font-bold uppercase tracking-widest mb-1 text-primary">Vision</h4>
+                      <p className="text-xs text-muted-foreground uppercase font-mono leading-relaxed">
+                        To transform academic environments through seamless, invisible automation that empowers both students and educators, creating a future where presence is quantified without friction.
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-accent">
-                      <Rocket className="h-4 w-4" />
-                      <span className="text-[10px] font-bold tracking-widest">EXPANSION_2024</span>
+                  
+                  <div className="flex gap-4 items-start group">
+                    <div className="h-10 w-10 shrink-0 rounded bg-accent/10 flex items-center justify-center border border-accent/20 group-hover:bg-accent group-hover:text-black transition-colors">
+                      <Target className="h-5 w-5" />
                     </div>
-                    <p className="text-[10px]">Introduced P2Net AI vision layers to provide dual-factor attendance verification.</p>
+                    <div>
+                      <h4 className="text-[12px] font-bold uppercase tracking-widest mb-1 text-accent">Mission</h4>
+                      <p className="text-xs text-muted-foreground uppercase font-mono leading-relaxed">
+                        To provide high-fidelity attendance tracking and institutional intelligence using a decentralized mesh of RFID and AI technologies, ensuring every instructional minute is valued and recorded.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-white/5" />
+
+              {/* About Our Journey History */}
+              <div className="space-y-6">
+                <Badge className="bg-white/5 text-muted-foreground border-white/5 font-mono text-[10px] tracking-widest uppercase">OUR_HISTORY</Badge>
+                <h2 className="text-4xl md:text-5xl font-headline font-bold leading-tight uppercase tracking-tighter">About Our Journey</h2>
+                <div className="space-y-6 text-muted-foreground text-sm uppercase font-mono tracking-tight leading-relaxed">
+                  <p>
+                    Edugo was born from a singular vision: to eliminate the friction of institutional administrative overhead. What started as a simple RFID experimental node has evolved into a comprehensive institutional mesh.
+                  </p>
+                  <p>
+                    Our journey has been defined by the pursuit of "Invisible Automation." We believe that technology should serve the educational experience, not distract from it.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-white/5">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-primary">
+                        <History className="h-4 w-4" />
+                        <span className="text-[10px] font-bold tracking-widest">ORIGIN_2023</span>
+                      </div>
+                      <p className="text-[10px]">Pioneered decentralized RFID scanning protocols in single-department pilots.</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-accent">
+                        <Rocket className="h-4 w-4" />
+                        <span className="text-[10px] font-bold tracking-widest">EXPANSION_2024</span>
+                      </div>
+                      <p className="text-[10px]">Introduced P2Net AI vision layers to provide dual-factor attendance verification.</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="relative">
+            <div className="sticky top-40 relative">
               <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full animate-pulse-slow" />
               <Card className="glass border-white/10 overflow-hidden relative z-10">
                 <div className="p-12 space-y-8">
