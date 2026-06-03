@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, BarChart3, Users } from "lucide-react"
+import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, BarChart3, Users, Network, Code2, Globe, History, Lightbulb, Rocket } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -32,7 +32,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-8">
           <Logo size="lg" />
           <nav className="hidden lg:flex items-center gap-10 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            {['Architecture', 'Documentation', 'Infrastructure'].map((item) => (
+            {['Architecture', 'Technology', 'Journey', 'Infrastructure'].map((item) => (
               <Link 
                 key={item} 
                 href={`#${item.toLowerCase()}`} 
@@ -99,15 +99,69 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Technology Plans Section */}
+        <section id="technology" className="py-40 px-8 max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-24 gap-8">
+            <div className="space-y-4">
+              <Badge variant="outline" className="text-primary border-primary/20 px-4 py-1 text-[10px] font-mono tracking-widest">ROADMAP_2025</Badge>
+              <h2 className="text-5xl md:text-7xl font-headline font-bold leading-none uppercase">Technology Plans</h2>
+            </div>
+            <p className="text-muted-foreground text-sm max-w-md uppercase font-mono tracking-tight leading-relaxed">
+              Engineering the future of autonomous campus environments through a decentralized compute mesh and multi-modal AI inference.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { 
+                title: "P2PNet AI Integration", 
+                desc: "Simulating high-performance vision models for crowd counting without compromising privacy.",
+                icon: Camera,
+                tag: "PHASE_1"
+              },
+              { 
+                title: "Decentralized RFID Mesh", 
+                desc: "Edge-based authentication nodes that function independently of central network availability.",
+                icon: Network,
+                tag: "PHASE_2"
+              },
+              { 
+                title: "Real-time Sync Engine", 
+                desc: "Sub-50ms latency for global institutional data synchronization across all terminal nodes.",
+                icon: Zap,
+                tag: "ACTIVE"
+              },
+              { 
+                title: "Edge Compute Nodes", 
+                desc: "Low-power, high-throughput inference hardware deployed at every classroom ingress point.",
+                icon: Cpu,
+                tag: "PLANNED"
+              }
+            ].map((plan, i) => (
+              <Card key={i} className="bg-sidebar/20 border-white/5 hover:border-primary/50 transition-all p-8 flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <plan.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <Badge className="text-[8px] font-mono bg-white/5 text-muted-foreground border-none">{plan.tag}</Badge>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold uppercase tracking-tight">{plan.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed uppercase font-mono">{plan.desc}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         {/* Dashboard Preview Section */}
-        <section className="py-40 px-8 max-w-7xl mx-auto overflow-hidden">
+        <section className="py-20 px-8 max-w-7xl mx-auto overflow-hidden">
           <div className="text-center mb-24">
             <h2 className="text-4xl md:text-6xl font-headline font-bold mb-6">INTELLIGENT COMMAND</h2>
             <p className="text-muted-foreground uppercase text-xs tracking-[0.3em]">Operational Oversight & Analytics</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
-            {/* Animated Cards */}
             <Card className="glass border-white/10 animate-float [animation-delay:0s] hover:neon-glow transition-all">
               <CardContent className="p-8">
                 <div className="flex items-center justify-between mb-8">
@@ -161,6 +215,63 @@ export default function LandingPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </section>
+
+        {/* About Our Journey Section */}
+        <section id="journey" className="py-40 bg-sidebar/10 relative">
+          <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="space-y-10">
+              <div className="space-y-4">
+                <Badge className="bg-accent/10 text-accent border-accent/20 font-mono text-[10px] tracking-widest uppercase">OUR_MISSION</Badge>
+                <h2 className="text-5xl md:text-7xl font-headline font-bold leading-tight uppercase">About Our Journey</h2>
+              </div>
+              <div className="space-y-6 text-muted-foreground text-sm uppercase font-mono tracking-tight leading-relaxed">
+                <p>
+                  Edugo was born from a singular vision: to eliminate the friction of institutional administrative overhead. What started as a simple RFID experimental node has evolved into a comprehensive institutional mesh.
+                </p>
+                <p>
+                  Our journey has been defined by the pursuit of "Invisible Automation." We believe that technology should serve the educational experience, not distract from it. By automating presence verification, we reclaim valuable instructional time for both students and faculty.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-white/5">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-primary">
+                      <History className="h-4 w-4" />
+                      <span className="text-[10px] font-bold tracking-widest">ORIGIN_2023</span>
+                    </div>
+                    <p className="text-[10px]">Pioneered decentralized RFID scanning protocols in single-department pilots.</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-accent">
+                      <Rocket className="h-4 w-4" />
+                      <span className="text-[10px] font-bold tracking-widest">EXPANSION_2024</span>
+                    </div>
+                    <p className="text-[10px]">Introduced P2Net AI vision layers to provide dual-factor attendance verification.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full animate-pulse-slow" />
+              <Card className="glass border-white/10 overflow-hidden relative z-10">
+                <div className="p-12 space-y-8">
+                  <div className="h-12 w-12 rounded bg-primary/20 flex items-center justify-center">
+                    <Lightbulb className="h-6 w-6 text-primary" />
+                  </div>
+                  <blockquote className="text-2xl font-headline font-bold italic text-white leading-tight">
+                    "We don't just count students; we enable institutional intelligence by bridging the gap between physical presence and digital records."
+                  </blockquote>
+                  <div className="flex items-center gap-4 border-t border-white/5 pt-8">
+                    <div className="h-10 w-10 rounded-full bg-secondary" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest">Dr. Alan Turing</p>
+                      <p className="text-[10px] font-mono text-muted-foreground">Chief Infrastructure Architect</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
         </section>
       </main>
