@@ -25,6 +25,7 @@ import { useAuth, useFirestore } from "@/firebase"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { FirebaseError } from "firebase/app"
 import { doc, getDoc } from "firebase/firestore"
+import { firebaseConfig } from "@/firebase/config"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid college email"),
@@ -51,7 +52,20 @@ export default function LoginPage() {
     },
   })
 
+  const isConfigPlaceholder = () => {
+    return firebaseConfig.apiKey.includes("REPLACE_WITH") || firebaseConfig.projectId.includes("REPLACE_WITH")
+  }
+
   async function onSubmit(values: z.infer<typeof loginSchema>) {
+    if (isConfigPlaceholder()) {
+      toast({
+        variant: "destructive",
+        title: "CONFIG_ERROR",
+        description: "Firebase configuration contains placeholders. Please update src/firebase/config.ts with your real credentials.",
+      })
+      return
+    }
+
     if (!auth || !db) {
       toast({
         variant: "destructive",
@@ -67,20 +81,14 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password)
       const user = userCredential.user
 
-      // Fetch profile to determine redirect
       const userDoc = await getDoc(doc(db, "users", user.uid))
       
       if (!userDoc.exists()) {
-        // Special case for initial admin email if it's not in Firestore yet but exists in Auth
-        if (values.email === "admin.003@providence.edu.in") {
-          router.push("/dashboard/admin")
-        } else {
-          toast({
-            variant: "destructive",
-            title: "PROFILE_NOT_FOUND",
-            description: "Account exists in Auth, but no academic profile was found in Firestore.",
-          })
-        }
+        toast({
+          variant: "destructive",
+          title: "PROFILE_NOT_FOUND",
+          description: "Account exists in Auth, but no academic profile was found in Firestore.",
+        })
         return
       }
 
@@ -92,7 +100,6 @@ export default function LoginPage() {
         description: `Session initialized as ${role?.toUpperCase()}.`,
       })
 
-      // Role-based routing
       if (role === "admin") router.push("/dashboard/admin")
       else if (role === "hod") router.push("/dashboard/hod")
       else if (role === "faculty") router.push("/dashboard/faculty")
@@ -111,11 +118,11 @@ export default function LoginPage() {
           case 'auth/wrong-password':
             errorMessage = "Incorrect password node."
             break
-          case 'auth/invalid-api-key':
-            errorMessage = "Firebase API key is invalid."
+          case 'auth/invalid-credential':
+            errorMessage = "Invalid login credentials."
             break
-          case 'auth/network-request-failed':
-            errorMessage = "Network error. Check your connection."
+          case 'auth/invalid-api-key':
+            errorMessage = "Firebase API key is invalid. Check src/firebase/config.ts."
             break
           default:
             errorMessage = error.message
@@ -132,9 +139,7 @@ export default function LoginPage() {
     }
   }
 
-  if (!mounted) {
-    return <div className="min-h-screen bg-background" />
-  }
+  if (!mounted) return null
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
@@ -161,7 +166,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">ID / College Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="admin.003@providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
+                      <Input placeholder="user@providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
                     </FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>

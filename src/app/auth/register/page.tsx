@@ -34,6 +34,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth"
 import { FirebaseError } from "firebase/app"
 import { doc, setDoc } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
+import { firebaseConfig } from "@/firebase/config"
 
 const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
 
@@ -84,7 +85,20 @@ export default function RegisterPage() {
     },
   })
 
+  const isConfigPlaceholder = () => {
+    return firebaseConfig.apiKey.includes("REPLACE_WITH") || firebaseConfig.projectId.includes("REPLACE_WITH")
+  }
+
   async function onSubmit(values: z.infer<typeof baseSchema>) {
+    if (isConfigPlaceholder()) {
+      toast({
+        variant: "destructive",
+        title: "CONFIG_ERROR",
+        description: "Firebase configuration contains placeholders. Please update src/firebase/config.ts with your real credentials.",
+      })
+      return
+    }
+
     if (!auth || !db) {
       toast({
         variant: "destructive",
@@ -106,7 +120,7 @@ export default function RegisterPage() {
         email: values.email,
         role: role,
         department: values.department,
-        isApproved: role === "student", // Students auto-approved, others need manual HOD approval
+        isApproved: role === "student",
         collegeName: "Providence College of Engineering",
         rollNumber: values.rollNumber || "",
         semester: values.semester || "",
@@ -133,14 +147,11 @@ export default function RegisterPage() {
           case 'auth/email-already-in-use':
             errorMessage = "This email is already registered."
             break
-          case 'auth/invalid-email':
-            errorMessage = "The email address is badly formatted."
-            break
           case 'auth/operation-not-allowed':
             errorMessage = "Email/Password auth is not enabled in Firebase Console."
             break
-          case 'auth/weak-password':
-            errorMessage = "The password is too weak."
+          case 'auth/invalid-api-key':
+            errorMessage = "Firebase API key is invalid. Check src/firebase/config.ts."
             break
           default:
             errorMessage = error.message
