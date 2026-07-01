@@ -26,9 +26,15 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight, Loader2, Info, Eye, EyeOff, ShieldCheck } from "lucide-react"
+import { ArrowRight, Loader2, Info, Eye, EyeOff } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
+import { useAuth, useFirestore } from "@/firebase"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"
+import { toast } from "@/hooks/use-toast"
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
 
@@ -52,6 +58,8 @@ type UserRole = "student" | "faculty" | "hod" | "advisor";
 
 export default function RegisterPage() {
   const router = useRouter()
+  const auth = useAuth()
+  const db = useFirestore()
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState<UserRole>("student")
   const [showPassword, setShowPassword] = useState(false)
@@ -77,20 +85,57 @@ export default function RegisterPage() {
     },
   })
 
-  function onSubmit(values: any) {
+  async function onSubmit(values: z.infer<typeof baseSchema>) {
+    if (!auth || !db) return
     setIsLoading(true)
-    const userData = {
-      ...values,
-      role,
-      isApproved: role === "student",
-    }
     
-    console.log("Saving user node:", userData)
-    
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password)
+      const user = userCredential.user
+
+      const userData = {
+        uid: user.uid,
+        fullName: values.fullName,
+        email: values.email,
+        role: role,
+        department: values.department,
+        isApproved: role === "student", // Students auto-approved, others need HOD/Admin
+        collegeName: "Providence College of Engineering",
+        rollNumber: values.rollNumber || "",
+        semester: values.semester || "",
+        subject: values.subject || "",
+        designation: values.designation || "",
+        assignedBatch: values.assignedBatch || "",
+        createdAt: serverTimestamp(),
+      }
+
+      const userDocRef = doc(db, "users", user.uid)
+      
+      setDoc(userDocRef, userData)
+        .catch(async (error) => {
+          const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: userData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        })
+
+      toast({
+        title: "ACCOUNT_CREATED",
+        description: "Node successfully registered on the Edugo network.",
+      })
+      
       router.push("/auth/login")
-    }, 2000)
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "REGISTRATION_FAILED",
+        description: error.message || "Could not initialize account node.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!mounted) {

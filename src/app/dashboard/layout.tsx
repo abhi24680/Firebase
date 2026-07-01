@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { 
   Sidebar, 
   SidebarProvider, 
@@ -17,6 +18,10 @@ import { Logo } from "@/components/logo"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
+import { useUser, useDoc, useFirestore } from "@/firebase"
+import { doc, updateDoc } from "firebase/firestore"
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function DashboardLayout({
   children,
@@ -25,54 +30,61 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+  const firestore = useFirestore()
+  const { user, loading: userLoading } = useUser()
   
-  const [role, setRole] = useState<'admin' | 'hod' | 'faculty' | 'student' | 'advisor'>('admin')
-  const [isApproved, setIsApproved] = useState(false)
-  const [nodeId, setNodeId] = useState<string | null>(null)
-  const [mounted, setMounted] = useState(false)
-  const [isSimulatingApproval, setIsSimulatingApproval] = useState(false)
+  const userDocRef = useMemo(() => {
+    if (!firestore || !user?.uid) return null
+    return doc(firestore, "users", user.uid)
+  }, [firestore, user?.uid])
 
-  // Sync role with pathname on mount and changes
-  useEffect(() => {
-    if (pathname.includes('/dashboard/admin')) setRole('admin')
-    else if (pathname.includes('/dashboard/hod')) setRole('hod')
-    else if (pathname.includes('/dashboard/advisor')) setRole('advisor')
-    else if (pathname.includes('/dashboard/faculty')) setRole('faculty')
-    else if (pathname.includes('/dashboard/student')) setRole('student')
-  }, [pathname])
+  const { data: profile, loading: profileLoading } = useDoc(userDocRef)
+
+  const [isSimulatingApproval, setIsSimulatingApproval] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    setNodeId(Math.random().toString(36).substring(7).toUpperCase())
-    
-    // Logic: Admin and Student are auto-approved.
-    // HOD requires Admin approval.
-    // Faculty and Advisor require HOD approval.
-    setIsApproved(role === 'student' || role === 'admin')
-  }, [role])
+  }, [])
 
-  const handleRoleChange = (newRole: string) => {
-    const r = newRole as any
-    setRole(r)
-    const route = r === 'admin' ? 'admin' : r
-    router.push(`/dashboard/${route}`)
-  }
+  const role = profile?.role || 'student'
+  const isApproved = profile?.isApproved || role === 'admin'
 
   const simulateApproval = () => {
+    if (!userDocRef) return
     setIsSimulatingApproval(true)
-    setTimeout(() => {
-      setIsApproved(true)
-      setIsSimulatingApproval(false)
-      const approver = role === 'hod' ? 'System Administrator' : 'Head of Department'
-      toast({
-        title: "ACCESS_GRANTED",
-        description: `${approver} has authorized your node credentials.`,
+    
+    updateDoc(userDocRef, { isApproved: true })
+      .then(() => {
+        setIsSimulatingApproval(false)
+        const approver = role === 'hod' ? 'System Administrator' : 'Head of Department'
+        toast({
+          title: "ACCESS_GRANTED",
+          description: `${approver} has authorized your node credentials.`,
+        })
       })
-    }, 2000)
+      .catch(async (error) => {
+        setIsSimulatingApproval(false)
+        const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'update',
+          requestResourceData: { isApproved: true },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
   }
 
-  if (!mounted) {
-    return <div className="min-h-screen bg-background" />
+  if (!mounted || userLoading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    router.push("/auth/login")
+    return null
   }
 
   if (!isApproved) {
@@ -98,7 +110,7 @@ export default function DashboardLayout({
             <p className="text-muted-foreground uppercase text-[10px] mb-2 tracking-widest">System Metadata:</p>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="truncate">NODE_ID: {nodeId || "INITIALIZING..."}</span>
+              <span className="truncate">NODE_ID: {user.uid.substring(0, 8).toUpperCase()}</span>
             </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="h-2 w-2 rounded-full bg-muted" />
@@ -147,14 +159,14 @@ export default function DashboardLayout({
               <Logo size="sm" iconOnly />
             </div>
           </SidebarHeader>
-          <NavMain role={role} />
+          <NavMain role={role as any} />
           <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-semibold truncate uppercase">Verified Node</p>
+                <p className="text-sm font-semibold truncate uppercase">{profile?.fullName || 'Verified Node'}</p>
                 <p className="text-xs text-muted-foreground truncate uppercase font-mono tracking-tighter">
                   {role}-NODE-PRC
                 </p>
@@ -178,20 +190,6 @@ export default function DashboardLayout({
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="hidden lg:flex items-center gap-2 mr-4">
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Simulation Level:</span>
-                <select 
-                  className="bg-transparent text-xs font-bold text-primary uppercase cursor-pointer focus:outline-none"
-                  value={role}
-                  onChange={(e) => handleRoleChange(e.target.value)}
-                >
-                  <option value="admin">Admin</option>
-                  <option value="hod">HOD</option>
-                  <option value="advisor">Advisor</option>
-                  <option value="faculty">Faculty</option>
-                  <option value="student">Student</option>
-                </select>
-              </div>
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground relative">
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-accent rounded-full border-2 border-background" />

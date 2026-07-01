@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -20,14 +21,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
+import { useAuth, useFirestore } from "@/firebase"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
 
 const loginSchema = z.object({
-  email: z.string().min(1, "ID or Email required"),
+  email: z.string().email("Please enter a valid college email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
 export default function LoginPage() {
   const router = useRouter()
+  const auth = useAuth()
+  const db = useFirestore()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -44,32 +50,56 @@ export default function LoginPage() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof loginSchema>) {
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
+    if (!auth || !db) return
     setIsLoading(true)
     
-    // Testing Phase Hardcoded Admin Credentials
-    const isAdmin = values.email === "admin1" || values.email === "admin.003@providence.edu.in";
-    if (isAdmin && values.password === "admin@123") {
-      setTimeout(() => {
-        setIsLoading(false)
-        router.push("/dashboard/admin")
-        toast({
-          title: "ADMIN_ROOT_ACCESS",
-          description: "System administrator session initialized.",
-        })
-      }, 1000)
-      return
-    }
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password)
+      const user = userCredential.user
 
-    // Standard Academic Auth
-    setTimeout(() => {
-      setIsLoading(false)
-      if (values.email.endsWith("student.providence.edu.in")) {
-        router.push("/dashboard/student")
-      } else {
-        router.push("/dashboard")
+      // Fetch profile to determine redirect
+      const userDoc = await getDoc(doc(db, "users", user.uid))
+      
+      if (!userDoc.exists()) {
+        // Special case for initial admin email if it's not in Firestore yet but exists in Auth
+        if (values.email === "admin.003@providence.edu.in") {
+          router.push("/dashboard/admin")
+        } else {
+          toast({
+            variant: "destructive",
+            title: "PROFILE_NOT_FOUND",
+            description: "No academic profile linked to this account.",
+          })
+        }
+        return
       }
-    }, 1500)
+
+      const userData = userDoc.data()
+      const role = userData.role
+
+      toast({
+        title: "AUTH_SUCCESS",
+        description: `Session initialized as ${role?.toUpperCase()}.`,
+      })
+
+      // Role-based routing
+      if (role === "admin") router.push("/dashboard/admin")
+      else if (role === "hod") router.push("/dashboard/hod")
+      else if (role === "faculty") router.push("/dashboard/faculty")
+      else if (role === "advisor") router.push("/dashboard/advisor")
+      else if (role === "student") router.push("/dashboard/student")
+      else router.push("/dashboard")
+
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "AUTH_FAILED",
+        description: error.message || "Invalid credentials provided.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!mounted) {
