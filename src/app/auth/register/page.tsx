@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowRight, Loader2, Info, Eye, EyeOff } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
@@ -135,9 +135,6 @@ export default function RegisterPage() {
             break
           case 'auth/operation-not-allowed':
             errorMessage = "Email/Password auth is not enabled in Firebase Console."
-            break
-          case 'auth/invalid-api-key':
-            errorMessage = "Firebase API key is invalid or missing in src/firebase/config.ts."
             break
           default:
             errorMessage = error.message
