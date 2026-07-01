@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StudentAttendance } from "@/components/dashboard/student-attendance"
@@ -9,25 +9,43 @@ import { LeaveRequestForm } from "@/components/dashboard/leave-request-form"
 import { SurveyView } from "@/components/dashboard/survey-view"
 import { StudentNotifications } from "@/components/dashboard/student-notifications"
 import { TimetableView } from "@/components/dashboard/timetable-view"
-import { Bell, ClipboardCheck, FileText, Calendar, Send, User } from "lucide-react"
+import { Bell, ClipboardCheck, FileText, Calendar, Send, User, Loader2 } from "lucide-react"
+import { useUser, useDoc, useFirestore } from "@/firebase"
+import { doc } from "firebase/firestore"
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState("attendance")
   const [mounted, setMounted] = useState(false)
-  
-  const [studentInfo] = useState({
-    nodeId: "S-2023-PRC-CA003",
-    semester: "SEM_3",
-    name: "Abhijith PRC",
-    dept: "Computer Science",
-    batch: "CSE 2021-25 A"
-  })
+  const { user, loading: authLoading } = useUser()
+  const db = useFirestore()
+
+  const userDocRef = useMemo(() => {
+    if (!db || !user?.uid) return null
+    return doc(db, "users", user.uid)
+  }, [db, user?.uid])
+
+  const { data: profile, loading: profileLoading } = useDoc(userDocRef)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) return null
+  if (!mounted || authLoading || profileLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="p-8 text-center space-y-4">
+        <User className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
+        <p className="text-sm font-mono uppercase text-muted-foreground">Profile node not found in registry.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -35,7 +53,7 @@ export default function StudentDashboard() {
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-headline font-bold tracking-tight uppercase">Student Terminal</h1>
           <p className="text-muted-foreground uppercase text-[10px] font-mono tracking-widest">
-            Node: {studentInfo.nodeId} | {studentInfo.dept.toUpperCase()} | {studentInfo.name.toUpperCase()}
+            Node: {profile.rollNumber || 'GUEST'} | {profile.department?.toUpperCase()} | {profile.fullName?.toUpperCase()}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -43,7 +61,7 @@ export default function StudentDashboard() {
             RFID_CONNECTED
           </Badge>
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono uppercase">
-            {studentInfo.semester}
+            SEM_{profile.semester || 'X'}
           </Badge>
         </div>
       </div>
@@ -86,7 +104,7 @@ export default function StudentDashboard() {
             <TabsContent value="timetable" className="mt-0 outline-none space-y-6">
               <div className="flex items-center gap-2 mb-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                <h2 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted-foreground">Master Schedule: {studentInfo.batch}</h2>
+                <h2 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted-foreground">Master Schedule: {profile.assignedBatch || 'GENERAL'}</h2>
               </div>
               <TimetableView />
             </TabsContent>
