@@ -31,10 +31,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useAuth, useFirestore } from "@/firebase"
 import { createUserWithEmailAndPassword, FirebaseError } from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
+import { doc, setDoc } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
-import { errorEmitter } from '@/firebase/error-emitter'
-import { FirestorePermissionError } from '@/firebase/errors'
 
 const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
 
@@ -98,7 +96,6 @@ export default function RegisterPage() {
     setIsLoading(true)
     
     try {
-      // 1. Create the Auth User
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password)
       const user = userCredential.user
 
@@ -108,7 +105,7 @@ export default function RegisterPage() {
         email: values.email,
         role: role,
         department: values.department,
-        isApproved: role === "student",
+        isApproved: role === "student", // Students auto-approved, others need manual HOD approval
         collegeName: "Providence College of Engineering",
         rollNumber: values.rollNumber || "",
         semester: values.semester || "",
@@ -118,19 +115,7 @@ export default function RegisterPage() {
         createdAt: new Date().toISOString(),
       }
 
-      // 2. Persist Profile Data
-      const userDocRef = doc(db, "users", user.uid)
-      
-      // We don't await this to keep UI responsive, but we handle the error via emitter
-      setDoc(userDocRef, userData)
-        .catch(async (error) => {
-          const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'create',
-            requestResourceData: userData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-        })
+      await setDoc(doc(db, "users", user.uid), userData)
 
       toast({
         title: "ACCOUNT_CREATED",
@@ -139,6 +124,7 @@ export default function RegisterPage() {
       
       router.push("/auth/login")
     } catch (error: any) {
+      console.error("Registration Error:", error)
       let errorMessage = "Could not initialize account node."
       
       if (error instanceof FirebaseError) {
@@ -146,14 +132,14 @@ export default function RegisterPage() {
           case 'auth/email-already-in-use':
             errorMessage = "This email is already registered."
             break
+          case 'auth/invalid-email':
+            errorMessage = "The email address is badly formatted."
+            break
           case 'auth/operation-not-allowed':
-            errorMessage = "Email/Password auth is not enabled in the Firebase Console."
+            errorMessage = "Email/Password auth is not enabled in Firebase Console."
             break
           case 'auth/weak-password':
             errorMessage = "The password is too weak."
-            break
-          case 'auth/invalid-api-key':
-            errorMessage = "The Firebase API key is invalid or missing."
             break
           default:
             errorMessage = error.message
@@ -170,9 +156,7 @@ export default function RegisterPage() {
     }
   }
 
-  if (!mounted) {
-    return <div className="min-h-screen bg-background" />
-  }
+  if (!mounted) return null
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
@@ -232,7 +216,7 @@ export default function RegisterPage() {
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">College Email</FormLabel>
-                      <FormControl><Input {...field} placeholder="user@student.providence.edu.in" className="bg-secondary/50 border-white/5" /></FormControl>
+                      <FormControl><Input {...field} placeholder="user@providence.edu.in" className="bg-secondary/50 border-white/5" /></FormControl>
                       <FormMessage className="text-[10px]" />
                     </FormItem>
                   )} />
@@ -306,33 +290,6 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                {role === "faculty" && (
-                  <FormField control={form.control} name="subject" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Primary Subject</FormLabel>
-                      <FormControl><Input placeholder="e.g. Data Structures" {...field} className="bg-secondary/50 border-white/5" /></FormControl>
-                    </FormItem>
-                  )} />
-                )}
-
-                {role === "advisor" && (
-                  <FormField control={form.control} name="assignedBatch" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Assigned Batch</FormLabel>
-                      <FormControl><Input placeholder="e.g. CSE 2021-25 A" {...field} className="bg-secondary/50 border-white/5" /></FormControl>
-                    </FormItem>
-                  )} />
-                )}
-
-                {role === "hod" && (
-                  <FormField control={form.control} name="designation" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Designation</FormLabel>
-                      <FormControl><Input placeholder="e.g. Professor & Head" {...field} className="bg-secondary/50 border-white/5" /></FormControl>
-                    </FormItem>
-                  )} />
-                )}
-
                 <Button type="submit" className="w-full h-11 font-bold group mt-6 shadow-lg shadow-primary/20" disabled={isLoading}>
                   {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : <>INITIALIZE ACCOUNT <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" /></>}
                 </Button>
@@ -344,10 +301,6 @@ export default function RegisterPage() {
           <p className="text-[10px] text-muted-foreground uppercase font-mono">
             Already have a node? <Link href="/auth/login" className="text-primary hover:underline font-bold">LOGIN HERE</Link>
           </p>
-          <div className="flex items-center gap-2 text-[9px] text-muted-foreground/50 uppercase font-mono">
-            <AlertCircle className="h-3 w-3" />
-            Check Firebase Console if registration consistently fails.
-          </div>
         </CardFooter>
       </Card>
     </div>

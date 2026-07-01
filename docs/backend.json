@@ -34,69 +34,12 @@
         "status": { "type": "string", "enum": ["present", "absent", "late"] },
         "markedBy": { "type": "string", "description": "UID of faculty who marked manually, or 'system'" }
       }
-    },
-    "LeaveRequest": {
-      "title": "Leave Request",
-      "description": "Student leave application submitted to HOD and Faculty Advisor.",
-      "type": "object",
-      "properties": {
-        "studentId": { "type": "string" },
-        "fullName": { "type": "string" },
-        "department": { "type": "string" },
-        "startDate": { "type": "string", "format": "date" },
-        "endDate": { "type": "string", "format": "date" },
-        "reason": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
-        "submittedAt": { "type": "string", "format": "date-time" },
-        "reviewedBy": { "type": "string", "description": "UID of the HOD who reviewed the request" }
-      }
-    },
-    "Survey": {
-      "title": "Survey",
-      "description": "Academic or institutional surveys for students.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "expiryDate": { "type": "string", "format": "date" },
-        "isActive": { "type": "boolean" }
-      }
-    },
-    "Department": {
-      "title": "Department",
-      "description": "Academic department metadata.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "hodUid": { "type": "string" }
-      }
     }
   },
   "auth": {
     "providers": ["password"]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": "UserProfile",
-      "description": "User profiles and approval state."
-    },
-    "/attendance/{logId}": {
-      "schema": "AttendanceLog",
-      "description": "Global attendance records."
-    },
-    "/leave_requests/{requestId}": {
-      "schema": "LeaveRequest",
-      "description": "Leave applications for faculty/HOD review."
-    },
-    "/surveys/{surveyId}": {
-      "schema": "Survey",
-      "description": "Active institutional surveys."
-    },
-    "/departments/{deptId}": {
-      "schema": "Department",
-      "description": "Department definitions and HOD mapping."
-    }
+    "rules": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /users/{userId} {\n      allow read, write: if request.auth != null;\n    }\n    match /attendance/{logId} {\n      allow read, write: if request.auth != null;\n    }\n    match /leave_requests/{requestId} {\n      allow read, write: if request.auth != null;\n    }\n    match /surveys/{surveyId} {\n      allow read: if request.auth != null;\n      allow write: if false; // Admin only usually\n    }\n  }\n}"
   }
 }

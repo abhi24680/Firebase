@@ -1,0 +1,26 @@
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow users to read and write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow admins/HODs to read all profiles
+      allow read: if request.auth != null; 
+    }
+    
+    // Attendance logs
+    match /attendance/{logId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Leave requests
+    match /leave_requests/{requestId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Surveys
+    match /surveys/{surveyId} {
+      allow read: if request.auth != null;
+    }
+  }
+}
