@@ -30,7 +30,8 @@ import { ArrowRight, Loader2, Info, Eye, EyeOff, AlertCircle } from "lucide-reac
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useAuth, useFirestore } from "@/firebase"
-import { createUserWithEmailAndPassword, FirebaseError } from "firebase/auth"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { FirebaseError } from "firebase/app"
 import { doc, setDoc } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
 

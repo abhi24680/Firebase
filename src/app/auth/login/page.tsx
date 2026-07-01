@@ -22,7 +22,8 @@ import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useAuth, useFirestore } from "@/firebase"
-import { signInWithEmailAndPassword, FirebaseError } from "firebase/auth"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { FirebaseError } from "firebase/app"
 import { doc, getDoc } from "firebase/firestore"
 
 const loginSchema = z.object({
