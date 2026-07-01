@@ -25,7 +25,6 @@ import { useAuth, useFirestore } from "@/firebase"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { FirebaseError } from "firebase/app"
 import { doc, getDoc } from "firebase/firestore"
-import { firebaseConfig } from "@/firebase/config"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid college email"),
@@ -52,25 +51,12 @@ export default function LoginPage() {
     },
   })
 
-  const isConfigPlaceholder = () => {
-    return firebaseConfig.apiKey.includes("REPLACE_WITH") || firebaseConfig.projectId.includes("REPLACE_WITH")
-  }
-
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    if (isConfigPlaceholder()) {
-      toast({
-        variant: "destructive",
-        title: "CONFIG_ERROR",
-        description: "Firebase configuration contains placeholders. Please update src/firebase/config.ts with your real credentials.",
-      })
-      return
-    }
-
     if (!auth || !db) {
       toast({
         variant: "destructive",
         title: "FIREBASE_UNINITIALIZED",
-        description: "Authentication service unavailable. Check config.",
+        description: "The authentication service is not yet ready. Please check your configuration.",
       })
       return
     }
@@ -108,6 +94,7 @@ export default function LoginPage() {
       else router.push("/dashboard")
 
     } catch (error: any) {
+      console.error("Login Error:", error)
       let errorMessage = "Invalid credentials provided."
       
       if (error instanceof FirebaseError) {
@@ -122,7 +109,7 @@ export default function LoginPage() {
             errorMessage = "Invalid login credentials."
             break
           case 'auth/invalid-api-key':
-            errorMessage = "Firebase API key is invalid. Check src/firebase/config.ts."
+            errorMessage = "Firebase API key is invalid or missing in src/firebase/config.ts."
             break
           default:
             errorMessage = error.message

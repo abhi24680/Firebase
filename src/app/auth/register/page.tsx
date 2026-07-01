@@ -25,8 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight, Loader2, Info, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/tabs"
+import { ArrowRight, Loader2, Info, Eye, EyeOff } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useAuth, useFirestore } from "@/firebase"
@@ -34,7 +34,6 @@ import { createUserWithEmailAndPassword } from "firebase/auth"
 import { FirebaseError } from "firebase/app"
 import { doc, setDoc } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
-import { firebaseConfig } from "@/firebase/config"
 
 const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
 
@@ -85,20 +84,7 @@ export default function RegisterPage() {
     },
   })
 
-  const isConfigPlaceholder = () => {
-    return firebaseConfig.apiKey.includes("REPLACE_WITH") || firebaseConfig.projectId.includes("REPLACE_WITH")
-  }
-
   async function onSubmit(values: z.infer<typeof baseSchema>) {
-    if (isConfigPlaceholder()) {
-      toast({
-        variant: "destructive",
-        title: "CONFIG_ERROR",
-        description: "Firebase configuration contains placeholders. Please update src/firebase/config.ts with your real credentials.",
-      })
-      return
-    }
-
     if (!auth || !db) {
       toast({
         variant: "destructive",
@@ -151,7 +137,7 @@ export default function RegisterPage() {
             errorMessage = "Email/Password auth is not enabled in Firebase Console."
             break
           case 'auth/invalid-api-key':
-            errorMessage = "Firebase API key is invalid. Check src/firebase/config.ts."
+            errorMessage = "Firebase API key is invalid or missing in src/firebase/config.ts."
             break
           default:
             errorMessage = error.message
