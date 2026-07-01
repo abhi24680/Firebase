@@ -26,11 +26,11 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRight, Loader2, Info, Eye, EyeOff } from "lucide-react"
+import { ArrowRight, Loader2, Info, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { useAuth, useFirestore } from "@/firebase"
-import { createUserWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword, FirebaseError } from "firebase/auth"
 import { doc, setDoc, serverTimestamp } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
@@ -86,10 +86,19 @@ export default function RegisterPage() {
   })
 
   async function onSubmit(values: z.infer<typeof baseSchema>) {
-    if (!auth || !db) return
+    if (!auth || !db) {
+      toast({
+        variant: "destructive",
+        title: "FIREBASE_UNINITIALIZED",
+        description: "The authentication service is not yet ready. Please check your configuration.",
+      })
+      return
+    }
+    
     setIsLoading(true)
     
     try {
+      // 1. Create the Auth User
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password)
       const user = userCredential.user
 
@@ -99,18 +108,20 @@ export default function RegisterPage() {
         email: values.email,
         role: role,
         department: values.department,
-        isApproved: role === "student", // Students auto-approved, others need HOD/Admin
+        isApproved: role === "student",
         collegeName: "Providence College of Engineering",
         rollNumber: values.rollNumber || "",
         semester: values.semester || "",
         subject: values.subject || "",
         designation: values.designation || "",
         assignedBatch: values.assignedBatch || "",
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
       }
 
+      // 2. Persist Profile Data
       const userDocRef = doc(db, "users", user.uid)
       
+      // We don't await this to keep UI responsive, but we handle the error via emitter
       setDoc(userDocRef, userData)
         .catch(async (error) => {
           const permissionError = new FirestorePermissionError({
@@ -123,15 +134,36 @@ export default function RegisterPage() {
 
       toast({
         title: "ACCOUNT_CREATED",
-        description: "Node successfully registered on the Edugo network.",
+        description: "Node successfully registered. Proceed to login.",
       })
       
       router.push("/auth/login")
     } catch (error: any) {
+      let errorMessage = "Could not initialize account node."
+      
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = "This email is already registered."
+            break
+          case 'auth/operation-not-allowed':
+            errorMessage = "Email/Password auth is not enabled in the Firebase Console."
+            break
+          case 'auth/weak-password':
+            errorMessage = "The password is too weak."
+            break
+          case 'auth/invalid-api-key':
+            errorMessage = "The Firebase API key is invalid or missing."
+            break
+          default:
+            errorMessage = error.message
+        }
+      }
+
       toast({
         variant: "destructive",
         title: "REGISTRATION_FAILED",
-        description: error.message || "Could not initialize account node.",
+        description: errorMessage,
       })
     } finally {
       setIsLoading(false)
@@ -308,10 +340,14 @@ export default function RegisterPage() {
             </Form>
           </Tabs>
         </CardContent>
-        <CardFooter className="justify-center border-t border-white/5 py-4">
+        <CardFooter className="justify-center border-t border-white/5 py-4 flex flex-col gap-4">
           <p className="text-[10px] text-muted-foreground uppercase font-mono">
             Already have a node? <Link href="/auth/login" className="text-primary hover:underline font-bold">LOGIN HERE</Link>
           </p>
+          <div className="flex items-center gap-2 text-[9px] text-muted-foreground/50 uppercase font-mono">
+            <AlertCircle className="h-3 w-3" />
+            Check Firebase Console if registration consistently fails.
+          </div>
         </CardFooter>
       </Card>
     </div>

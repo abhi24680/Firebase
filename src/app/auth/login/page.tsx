@@ -22,7 +22,7 @@ import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useAuth, useFirestore } from "@/firebase"
-import { signInWithEmailAndPassword } from "firebase/auth"
+import { signInWithEmailAndPassword, FirebaseError } from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
 
 const loginSchema = z.object({
@@ -51,7 +51,15 @@ export default function LoginPage() {
   })
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    if (!auth || !db) return
+    if (!auth || !db) {
+      toast({
+        variant: "destructive",
+        title: "FIREBASE_UNINITIALIZED",
+        description: "Authentication service unavailable. Check config.",
+      })
+      return
+    }
+    
     setIsLoading(true)
     
     try {
@@ -69,7 +77,7 @@ export default function LoginPage() {
           toast({
             variant: "destructive",
             title: "PROFILE_NOT_FOUND",
-            description: "No academic profile linked to this account.",
+            description: "Account exists in Auth, but no academic profile was found in Firestore.",
           })
         }
         return
@@ -92,10 +100,31 @@ export default function LoginPage() {
       else router.push("/dashboard")
 
     } catch (error: any) {
+      let errorMessage = "Invalid credentials provided."
+      
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+            errorMessage = "No node found with this email."
+            break
+          case 'auth/wrong-password':
+            errorMessage = "Incorrect password node."
+            break
+          case 'auth/invalid-api-key':
+            errorMessage = "Firebase API key is invalid."
+            break
+          case 'auth/network-request-failed':
+            errorMessage = "Network error. Check your connection."
+            break
+          default:
+            errorMessage = error.message
+        }
+      }
+
       toast({
         variant: "destructive",
         title: "AUTH_FAILED",
-        description: error.message || "Invalid credentials provided.",
+        description: errorMessage,
       })
     } finally {
       setIsLoading(false)
