@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, Users, Network, History, Lightbulb, Rocket, Eye, Target } from "lucide-react"
@@ -23,12 +23,31 @@ const TECH_PLANS = [
   { title: "Edge Compute Nodes", desc: "Low-power, high-throughput inference hardware deployed at every classroom ingress point.", icon: Cpu, tag: "PLANNED" },
 ];
 
+interface Ripple {
+  id: number
+  x: number
+  y: number
+}
+
 export default function LandingPage() {
   const [splash, setSplash] = useState(true)
+  const [ripples, setRipples] = useState<Ripple[]>([])
+  const [cursor, setCursor] = useState({ x: -200, y: -200 })
+  const rippleId = useRef(0)
 
   useEffect(() => {
     const timer = setTimeout(() => setSplash(false), 2500)
     return () => clearTimeout(timer)
+  }, [])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    setCursor({ x: e.clientX, y: e.clientY })
+  }, [])
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    const id = ++rippleId.current
+    setRipples(prev => [...prev, { id, x: e.clientX, y: e.clientY }])
+    setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 600)
   }, [])
 
   if (splash) {
@@ -64,7 +83,26 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden animate-in fade-in duration-700">
+    <div className="min-h-screen bg-background relative overflow-hidden animate-in fade-in duration-700" onClick={handleClick} onMouseMove={handleMouseMove}>
+      {/* Cursor Glow */}
+      <div
+        className="fixed pointer-events-none z-50 transition-transform duration-75 ease-linear"
+        style={{ left: cursor.x - 150, top: cursor.y - 150, width: 300, height: 300 }}
+      >
+        <div className="w-full h-full rounded-full bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.12),transparent_70%)]" />
+      </div>
+
+      {/* Ripple Layer */}
+      <div className="fixed inset-0 pointer-events-none z-50">
+        {ripples.map(r => (
+          <span
+            key={r.id}
+            className="absolute rounded-full border border-primary/40 animate-ripple"
+            style={{ left: r.x - 20, top: r.y - 20, width: 40, height: 40 }}
+          />
+        ))}
+      </div>
+
       {/* Background Effects */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-0 left-0 w-full h-full grid-background opacity-20 animate-grid-flow" />

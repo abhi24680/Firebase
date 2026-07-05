@@ -94,6 +94,10 @@ export default {
         'ping-slower': {
           '75%, 100%': { transform: 'scale(2)', opacity: '0' },
         },
+        'ripple': {
+          '0%': { transform: 'scale(0)', opacity: '0.5' },
+          '100%': { transform: 'scale(4)', opacity: '0' },
+        },
       },
       animation: {
         'gradient-x': 'gradient-x 15s ease infinite',
@@ -102,9 +106,10 @@ export default {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'shimmer': 'shimmer 2.5s infinite linear',
         'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear',
-        'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
         'ping-slow': 'ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite',
         'ping-slower': 'ping-slower 2.5s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'ripple': 'ripple 600ms ease-out forwards',
       },
     },
   },

@@ -8,15 +8,15 @@ interface LogoProps {
 }
 
 const SIZES = {
-  sm: "h-6 w-6 text-lg",
-  md: "h-8 w-8 text-xl",
-  lg: "h-10 w-10 text-2xl",
+  sm: "h-5 w-5 text-base",
+  md: "h-7 w-7 text-lg",
+  lg: "h-9 w-9 text-xl",
 } as const;
 
 const TEXT_SIZES = {
-  sm: "text-lg",
-  md: "text-xl",
-  lg: "text-2xl",
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-lg",
 } as const;
 
 export function Logo({ className, iconOnly = false, size = "md" }: LogoProps) {
