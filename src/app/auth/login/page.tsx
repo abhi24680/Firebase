@@ -21,7 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
-import { useAuth, useFirestore } from "@/firebase"
+import { useAuth, useFirestore, useDemo, DemoRole } from "@/firebase"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { FirebaseError } from "firebase/app"
 import { doc, getDoc } from "firebase/firestore"
@@ -42,6 +42,7 @@ export default function LoginPage() {
   const router = useRouter()
   const auth = useAuth()
   const db = useFirestore()
+  const { loginDemo } = useDemo()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -207,6 +208,28 @@ export default function LoginPage() {
               REGISTER ACCOUNT
             </Link>
           </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-dashed border-amber-500/20" />
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase">
+              <span className="bg-card px-2 text-amber-500 font-mono tracking-widest">DEMO ACCESS</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {(['student', 'faculty', 'hod', 'advisor', 'admin'] as DemoRole[]).map((role) => (
+              <Button
+                key={role}
+                variant="outline"
+                size="sm"
+                className="border-amber-500/20 hover:border-amber-500/50 hover:bg-amber-500/5 text-[10px] font-mono uppercase tracking-wider"
+                onClick={() => { loginDemo(role); router.push(`/dashboard/${role}`); }}
+              >
+                {role}
+              </Button>
+            ))}
+          </div>
 
           <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground uppercase font-mono tracking-widest opacity-50">
             <ShieldCheck className="h-3 w-3 text-primary" />
