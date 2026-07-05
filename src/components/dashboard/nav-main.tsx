@@ -9,17 +9,12 @@ import {
   Calendar, 
   Camera, 
   FileSpreadsheet, 
-  Shield, 
-  MessageSquare,
   Building2,
   ClipboardCheck,
   LogOut,
-  UserCheck,
   Activity,
   History,
   GraduationCap,
-  ClipboardList,
-  FileText,
   Settings,
   ShieldCheck,
   Send,
@@ -46,47 +41,47 @@ interface NavMainProps {
   role: 'admin' | 'hod' | 'faculty' | 'student' | 'advisor'
 }
 
+const NAV_GROUPS: Record<string, NavItem[]> = {
+  admin: [
+    { title: "System Health", url: "/dashboard/admin", icon: Activity },
+    { title: "Departments", url: "/dashboard/admin/departments", icon: Building2 },
+    { title: "HOD Management", url: "/dashboard/admin/hods", icon: ShieldCheck },
+    { title: "Student Directory", url: "/dashboard/admin/students", icon: Users },
+    { title: "Inference Node", url: "/dashboard/admin/camera", icon: Camera },
+    { title: "System Settings", url: "/dashboard/admin/settings", icon: Settings },
+  ],
+  hod: [
+    { title: "Dept Overview", url: "/dashboard/hod", icon: LayoutDashboard },
+    { title: "Validation Queue", url: "/dashboard/hod/approvals", icon: ShieldCheck },
+    { title: "Master Timetable", url: "/dashboard/hod/timetable", icon: Calendar },
+    { title: "Subject Mapping", url: "/dashboard/hod/mapping", icon: LinkIcon },
+    { title: "Faculty Hub", url: "/dashboard/hod/faculty", icon: UserCog },
+    { title: "Student Hub", url: "/dashboard/hod/students", icon: GraduationCap },
+    { title: "Attendance Logs", url: "/dashboard/hod/attendance", icon: ClipboardCheck },
+  ],
+  advisor: [
+    { title: "Batch Overview", url: "/dashboard/advisor", icon: LayoutDashboard },
+    { title: "Batch Students", url: "/dashboard/advisor/students", icon: Users },
+    { title: "Batch Attendance", url: "/dashboard/advisor/attendance", icon: ClipboardCheck },
+    { title: "Timetable", url: "/dashboard/advisor/timetable", icon: Calendar },
+    { title: "Leave Requests", url: "/dashboard/advisor/leaves", icon: Send },
+  ],
+  faculty: [
+    { title: "Active Session", url: "/dashboard/faculty", icon: Activity },
+    { title: "Quick Attendance", url: "/dashboard/faculty/attendance", icon: ClipboardCheck },
+    { title: "My Timetable", url: "/dashboard/faculty/timetable", icon: Calendar },
+    { title: "Student History", url: "/dashboard/faculty/history", icon: History },
+    { title: "Reports", url: "/dashboard/faculty/reports", icon: FileSpreadsheet },
+  ],
+  student: [
+    { title: "My Terminal", url: "/dashboard/student", icon: LayoutDashboard },
+  ]
+};
+
 export function NavMain({ role }: NavMainProps) {
   const pathname = usePathname()
 
-  const navGroups: Record<string, NavItem[]> = {
-    admin: [
-      { title: "System Health", url: "/dashboard/admin", icon: Activity },
-      { title: "Departments", url: "/dashboard/admin/departments", icon: Building2 },
-      { title: "HOD Management", url: "/dashboard/admin/hods", icon: ShieldCheck },
-      { title: "Student Directory", url: "/dashboard/admin/students", icon: Users },
-      { title: "Inference Node", url: "/dashboard/admin/camera", icon: Camera },
-      { title: "System Settings", url: "/dashboard/admin/settings", icon: Settings },
-    ],
-    hod: [
-      { title: "Dept Overview", url: "/dashboard/hod", icon: LayoutDashboard },
-      { title: "Validation Queue", url: "/dashboard/hod/approvals", icon: ShieldCheck },
-      { title: "Master Timetable", url: "/dashboard/hod/timetable", icon: Calendar },
-      { title: "Subject Mapping", url: "/dashboard/hod/mapping", icon: LinkIcon },
-      { title: "Faculty Hub", url: "/dashboard/hod/faculty", icon: UserCog },
-      { title: "Student Hub", url: "/dashboard/hod/students", icon: GraduationCap },
-      { title: "Attendance Logs", url: "/dashboard/hod/attendance", icon: ClipboardCheck },
-    ],
-    advisor: [
-      { title: "Batch Overview", url: "/dashboard/advisor", icon: LayoutDashboard },
-      { title: "Batch Students", url: "/dashboard/advisor/students", icon: Users },
-      { title: "Batch Attendance", url: "/dashboard/advisor/attendance", icon: ClipboardCheck },
-      { title: "Timetable", url: "/dashboard/advisor/timetable", icon: Calendar },
-      { title: "Leave Requests", url: "/dashboard/advisor/leaves", icon: Send },
-    ],
-    faculty: [
-      { title: "Active Session", url: "/dashboard/faculty", icon: Activity },
-      { title: "Quick Attendance", url: "/dashboard/faculty/attendance", icon: ClipboardCheck },
-      { title: "My Timetable", url: "/dashboard/faculty/timetable", icon: Calendar },
-      { title: "Student History", url: "/dashboard/faculty/history", icon: History },
-      { title: "Reports", url: "/dashboard/faculty/reports", icon: FileSpreadsheet },
-    ],
-    student: [
-      { title: "My Terminal", url: "/dashboard/student", icon: LayoutDashboard },
-    ]
-  }
-
-  const items = navGroups[role] || []
+  const items = NAV_GROUPS[role] || []
 
   return (
     <SidebarContent>

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 export default function HODStudents() {
   const [search, setSearch] = useState("")
@@ -97,11 +98,14 @@ export default function HODStudents() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={
-                      s.compliance === 'OPTIMAL' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
-                      s.compliance === 'WARNING' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
-                      "bg-destructive/10 text-destructive border-destructive/20"
-                    } variant="outline" className="text-[8px] uppercase font-mono">
+                    <Badge variant="outline" className={
+                      cn(
+                        "text-[8px] uppercase font-mono",
+                        s.compliance === 'OPTIMAL' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+                        s.compliance === 'WARNING' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
+                        "bg-destructive/10 text-destructive border-destructive/20"
+                      )
+                    }>
                       {s.compliance}
                     </Badge>
                   </TableCell>

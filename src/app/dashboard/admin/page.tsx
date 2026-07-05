@@ -5,9 +5,7 @@ import { useState, useEffect } from "react"
 import { 
   Activity, 
   ShieldCheck, 
-  Database, 
   Cpu, 
-  Users, 
   CheckCircle2, 
   AlertTriangle, 
   TrendingUp,
@@ -24,6 +22,13 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
+const METRICS = [
+  { label: "Core Compute", value: "14.2%", icon: Cpu, color: "text-blue-500", status: "Optimal" },
+  { label: "P2Net Inference", value: "28.1%", icon: Activity, color: "text-accent", status: "Active" },
+  { label: "Mesh Latency", value: "12ms", icon: Network, color: "text-emerald-500", status: "Low" },
+  { label: "Storage Node", value: "84%", icon: HardDrive, color: "text-purple-500", status: "Healthy" },
+];
 
 export default function AdminDashboard() {
   const [census, setCensus] = useState({
@@ -49,13 +54,6 @@ export default function AdminDashboard() {
   const isMatched = census.aiCount === census.rfidCount
   const diff = Math.abs(census.aiCount - census.rfidCount)
 
-  const metrics = [
-    { label: "Core Compute", value: "14.2%", icon: Cpu, color: "text-blue-500", status: "Optimal" },
-    { label: "P2Net Inference", value: "28.1%", icon: Activity, color: "text-accent", status: "Active" },
-    { label: "Mesh Latency", value: "12ms", icon: Network, color: "text-emerald-500", status: "Low" },
-    { label: "Storage Node", value: "84%", icon: HardDrive, color: "text-purple-500", status: "Healthy" },
-  ]
-
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -78,7 +76,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metrics.map((metric) => (
+        {METRICS.map((metric) => (
           <Card key={metric.label} className="bg-sidebar/30 border-sidebar-border overflow-hidden group hover:neon-border transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">

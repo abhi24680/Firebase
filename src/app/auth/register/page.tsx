@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -35,7 +35,10 @@ import { FirebaseError } from "firebase/app"
 import { doc, setDoc } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
 
-const departments = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"]
+const DEPARTMENTS = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"] as const;
+const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+const ROLES = ["student", "faculty", "advisor", "hod"] as const;
+type UserRole = typeof ROLES[number];
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Required"),
@@ -53,8 +56,6 @@ const baseSchema = z.object({
   path: ["confirmPassword"],
 })
 
-type UserRole = "student" | "faculty" | "hod" | "advisor";
-
 export default function RegisterPage() {
   const router = useRouter()
   const auth = useAuth()
@@ -62,11 +63,6 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState<UserRole>("student")
   const [showPassword, setShowPassword] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const form = useForm<z.infer<typeof baseSchema>>({
     resolver: zodResolver(baseSchema),
@@ -151,8 +147,6 @@ export default function RegisterPage() {
     }
   }
 
-  if (!mounted) return null
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
@@ -167,15 +161,16 @@ export default function RegisterPage() {
           <CardDescription>Configure your identity on the Edugo network.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="student" onValueChange={(v) => {
-            setRole(v as any)
+            <Tabs defaultValue="student" onValueChange={(v) => {
+            setRole(v as UserRole)
             form.reset()
           }}>
             <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary/50 p-1 rounded-lg">
-              <TabsTrigger value="student" className="text-[10px] uppercase tracking-tighter">Student</TabsTrigger>
-              <TabsTrigger value="faculty" className="text-[10px] uppercase tracking-tighter">Faculty</TabsTrigger>
-              <TabsTrigger value="advisor" className="text-[10px] uppercase tracking-tighter">Advisor</TabsTrigger>
-              <TabsTrigger value="hod" className="text-[10px] uppercase tracking-tighter">HOD</TabsTrigger>
+              {ROLES.map(r => (
+                <TabsTrigger key={r} value={r} className="text-[10px] uppercase tracking-tighter">
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <div className="mb-6">
@@ -257,7 +252,7 @@ export default function RegisterPage() {
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger className="bg-secondary/50 border-white/5"><SelectValue placeholder="Select Academic Unit" /></SelectTrigger></FormControl>
                       <SelectContent>
-                        {departments.map(d => <SelectItem key={d} value={d} className="text-xs uppercase">{d}</SelectItem>)}
+                        {DEPARTMENTS.map(d => <SelectItem key={d} value={d} className="text-xs uppercase">{d}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-[10px]" />
@@ -278,7 +273,7 @@ export default function RegisterPage() {
                         <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Semester</FormLabel>
                         <Select onValueChange={field.onChange}>
                           <FormControl><SelectTrigger className="bg-secondary/50 border-white/5"><SelectValue placeholder="Select Sem" /></SelectTrigger></FormControl>
-                          <SelectContent>{[1,2,3,4,5,6,7,8].map(s => <SelectItem key={s} value={s.toString()} className="text-xs">SEM {s}</SelectItem>)}</SelectContent>
+                          <SelectContent>{SEMESTERS.map(s => <SelectItem key={s} value={s.toString()} className="text-xs">SEM {s}</SelectItem>)}</SelectContent>
                         </Select>
                       </FormItem>
                     )} />

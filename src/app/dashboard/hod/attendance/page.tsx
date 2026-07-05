@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { ClipboardCheck, Search, Filter, AlertTriangle, CheckCircle2, XCircle, MoreVertical, Edit2 } from "lucide-react"
+import { Search, Filter, CheckCircle2, XCircle, MoreVertical } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

@@ -1,44 +1,37 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
-import { Activity, Users, BookOpen, Clock, AlertTriangle, CheckCircle2, UserCheck, Search, LayoutGrid } from "lucide-react"
+import { Activity, Users, BookOpen, AlertTriangle, CheckCircle2, LayoutGrid } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { AttendanceStats } from "@/components/dashboard/attendance-stats"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
+const DEPT_METRICS = [
+  { label: "Active Sessions", value: "8", icon: Activity, color: "text-primary" },
+  { label: "Faculty Online", value: "14/18", icon: Users, color: "text-accent" },
+  { label: "Total Students", value: "420", icon: BookOpen, color: "text-emerald-500" },
+  { label: "Avg Attendance", value: "78%", icon: CheckCircle2, color: "text-blue-500" },
+];
+
+const FACULTY_STATUS = [
+  { name: "Dr. Alan Turing", subject: "Data Structures", room: "LH-301", status: "Active" as const },
+  { name: "Dr. Grace Hopper", subject: "Operating Systems", room: "LH-302", status: "Active" as const },
+  { name: "Dr. Richard Feynman", subject: "Quantum Computing", room: "LAB-2", status: "Offline" as const },
+  { name: "Dr. Marie Curie", subject: "Thermodynamics", room: "LH-101", status: "Active" as const },
+];
+
+const LIVE_ROOMS = [
+  { room: "LH-301", subject: "Data Structures", rfid: 42, p2net: 45, status: "mismatch" as const },
+  { room: "LH-302", subject: "Operating Systems", rfid: 38, p2net: 38, status: "synced" as const },
+  { room: "CS-LAB-1", subject: "Networking Lab", rfid: 20, p2net: 21, status: "synced" as const },
+  { room: "LH-101", subject: "Maths II", rfid: 55, p2net: 60, status: "mismatch" as const },
+];
+
+const ALERTS = [1, 2, 3];
+
 export default function HODDashboard() {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const deptMetrics = [
-    { label: "Active Sessions", value: "8", icon: Activity, color: "text-primary" },
-    { label: "Faculty Online", value: "14/18", icon: Users, color: "text-accent" },
-    { label: "Total Students", value: "420", icon: BookOpen, color: "text-emerald-500" },
-    { label: "Avg Attendance", value: "78%", icon: CheckCircle2, color: "text-blue-500" },
-  ]
-
-  const facultyStatus = [
-    { name: "Dr. Alan Turing", subject: "Data Structures", room: "LH-301", status: "Active" },
-    { name: "Dr. Grace Hopper", subject: "Operating Systems", room: "LH-302", status: "Active" },
-    { name: "Dr. Richard Feynman", subject: "Quantum Computing", room: "LAB-2", status: "Offline" },
-    { name: "Dr. Marie Curie", subject: "Thermodynamics", room: "LH-101", status: "Active" },
-  ]
-
-  const liveRooms = [
-    { room: "LH-301", subject: "Data Structures", rfid: 42, p2net: 45, status: "mismatch" },
-    { room: "LH-302", subject: "Operating Systems", rfid: 38, p2net: 38, status: "synced" },
-    { room: "CS-LAB-1", subject: "Networking Lab", rfid: 20, p2net: 21, status: "synced" },
-    { room: "LH-101", subject: "Maths II", rfid: 55, p2net: 60, status: "mismatch" },
-  ]
-
-  if (!mounted) return null
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -60,7 +53,7 @@ export default function HODDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {deptMetrics.map((metric) => (
+        {DEPT_METRICS.map((metric) => (
           <Card key={metric.label} className="bg-sidebar/30 border-sidebar-border group hover:border-primary/50 transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -92,7 +85,7 @@ export default function HODDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {liveRooms.map((room, i) => (
+                {LIVE_ROOMS.map((room, i) => (
                   <div key={i} className="flex flex-col p-4 bg-secondary/30 rounded-lg border border-white/5 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-sm uppercase">{room.room}</span>
@@ -141,7 +134,7 @@ export default function HODDashboard() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-white/5">
-                {facultyStatus.map((f, i) => (
+                {FACULTY_STATUS.map((f, i) => (
                   <div key={i} className="p-4 flex items-center justify-between group hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={cn(
@@ -167,7 +160,7 @@ export default function HODDashboard() {
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-destructive">Compliance Alerts</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[1, 2, 3].map((i) => (
+              {ALERTS.map((i) => (
                 <div key={i} className="flex items-start gap-3 p-3 bg-destructive/5 border border-destructive/10 rounded-lg">
                   <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                   <div className="space-y-1">

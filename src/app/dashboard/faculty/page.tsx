@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Camera, Users, Clock, ShieldCheck, Zap, RefreshCw, Loader2, Plus, Trash2, UserPlus, Search, Download, MessageSquare, UserCheck } from "lucide-react"
+import { Camera, ShieldCheck, Zap, RefreshCw, Loader2, Plus, Trash2, UserPlus, Download, MessageSquare } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

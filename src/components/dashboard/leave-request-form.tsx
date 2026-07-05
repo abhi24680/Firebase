@@ -12,6 +12,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Send, Loader2, Calendar as CalendarIcon } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { useUser, useFirestore } from "@/firebase"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { FirebaseError } from "firebase/app"
 
 const leaveSchema = z.object({
   startDate: z.string().min(1, "Required"),
@@ -21,6 +24,8 @@ const leaveSchema = z.object({
 
 export function LeaveRequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const db = useFirestore()
+  const { user } = useUser()
 
   const form = useForm<z.infer<typeof leaveSchema>>({
     resolver: zodResolver(leaveSchema),
@@ -31,19 +36,36 @@ export function LeaveRequestForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof leaveSchema>) {
+  async function onSubmit(values: z.infer<typeof leaveSchema>) {
+    if (!db || !user) {
+      toast({ variant: "destructive", title: "FIREBASE_UNINITIALIZED", description: "Database not ready." })
+      return
+    }
     setIsSubmitting(true)
-    console.log("Submitting Leave Node:", values)
-    
-    // Simulation
-    setTimeout(() => {
-      setIsSubmitting(false)
+    try {
+      await addDoc(collection(db, "leave_requests"), {
+        uid: user.uid,
+        email: user.email,
+        startDate: values.startDate,
+        endDate: values.endDate,
+        reason: values.reason,
+        status: "pending",
+        createdAt: serverTimestamp(),
+      })
       form.reset()
       toast({
         title: "LEAVE_REQUEST_SENT",
         description: "Application dispatched to HOD & Advisor. Track status in Portal.",
       })
-    }, 1500)
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "SUBMISSION_FAILED",
+        description: error instanceof FirebaseError ? error.message : "Could not submit leave request.",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

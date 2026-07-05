@@ -17,4 +17,5 @@ export * from './firestore/use-collection';
 export * from './firestore/use-doc';
 export * from './error-emitter';
 export * from './errors';
+export * from './demo-context';
 export { FirebaseClientProvider } from './client-provider';

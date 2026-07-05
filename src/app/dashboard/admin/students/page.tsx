@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Search, GraduationCap, Filter, ExternalLink, ShieldCheck, Database, LayoutGrid, Loader2 } from "lucide-react"
+import { Search, GraduationCap, Filter, ExternalLink, ShieldCheck, Database, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -89,7 +89,7 @@ export default function AdminStudents() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((student: any) => (
+                {filtered.map((student) => (
                   <TableRow key={student.id} className="border-white/5 hover:bg-white/5 transition-colors group">
                     <TableCell className="pl-6 py-5">
                       <div className="flex items-center gap-4">

@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Camera, Laptop, Usb, Smartphone, Radio, Settings2, RefreshCw, Loader2, Zap, ShieldAlert } from "lucide-react"
+import { Camera, Settings2, RefreshCw, Loader2, Zap } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"

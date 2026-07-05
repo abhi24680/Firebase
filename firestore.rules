@@ -1,26 +1,41 @@
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to read and write their own profile
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      // Allow admins/HODs to read all profiles
-      allow read: if request.auth != null; 
-    }
-    
-    // Attendance logs
-    match /attendance/{logId} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // Leave requests
-    match /leave_requests/{requestId} {
-      allow read, write: if request.auth != null;
+    // Helper: check if the requesting user has a specific role
+    function isRole(role) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
     }
 
-    // Surveys
+    // Users: read own profile; admins/HODs can read all; write only own profile
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId
+        || isRole('admin') || isRole('hod');
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId
+        || isRole('admin');
+      allow delete: if isRole('admin');
+    }
+
+    // Attendance logs: admins, HODs, faculty can read/write; students read-only
+    match /attendance/{logId} {
+      allow read: if request.auth != null;
+      allow write: if isRole('admin') || isRole('hod') || isRole('faculty');
+    }
+
+    // Leave requests: students create their own; admins/HODs/advisor can read/write
+    match /leave_requests/{requestId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update: if isRole('admin') || isRole('hod') || isRole('advisor');
+      allow delete: if isRole('admin');
+    }
+
+    // Surveys: read by all, write only by admins
     match /surveys/{surveyId} {
       allow read: if request.auth != null;
+      allow write: if isRole('admin');
     }
   }
 }

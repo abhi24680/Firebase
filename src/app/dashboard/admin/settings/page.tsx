@@ -1,6 +1,6 @@
 "use client"
 
-import { Database, Shield, Zap, Bell, Globe, Cpu } from "lucide-react"
+import { Shield, Globe, Cpu } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"

@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/sidebar"
 import { NavMain } from "@/components/dashboard/nav-main"
 import { Input } from "@/components/ui/input"
-import { Search, Bell, Settings, User, LogOut, ShieldAlert, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
+import { Search, Bell, Settings, User, ShieldAlert, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useUser, useDoc, useFirestore } from "@/firebase"
@@ -28,7 +28,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const pathname = usePathname()
   const router = useRouter()
   const firestore = useFirestore()
   const { user, loading: userLoading } = useUser()
@@ -63,7 +62,7 @@ export default function DashboardLayout({
           description: `${approver} has authorized your node credentials.`,
         })
       })
-      .catch(async (error) => {
+      .catch(async (error: any) => {
         setIsSimulatingApproval(false)
         const permissionError = new FirestorePermissionError({
           path: userDocRef.path,

@@ -1,7 +1,18 @@
 import type {NextConfig} from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  outputFileTracingRoot: path.join(__dirname, './'),
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'firebase/app': path.resolve(__dirname, 'node_modules/firebase/app'),
+      'firebase/auth': path.resolve(__dirname, 'node_modules/firebase/auth'),
+      'firebase/firestore': path.resolve(__dirname, 'node_modules/firebase/firestore'),
+      'firebase': path.resolve(__dirname, 'node_modules/firebase'),
+    };
+    return config;
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

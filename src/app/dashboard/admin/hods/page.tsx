@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { ShieldAlert, UserPlus, UserMinus, ShieldCheck, Mail, Building2, Search, Filter, Loader2 } from "lucide-react"
+import { ShieldAlert, UserMinus, ShieldCheck, Mail, Building2, Search, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -45,7 +45,7 @@ export default function AdminHODs() {
           description: "Administrative credentials granted to node.",
         })
       })
-      .catch(async (error) => {
+      .catch(async () => {
         const permissionError = new FirestorePermissionError({
           path: hodRef.path,
           operation: 'update',
@@ -66,7 +66,7 @@ export default function AdminHODs() {
           description: "Administrative access revoked.",
         })
       })
-      .catch(async (error) => {
+      .catch(async () => {
         const permissionError = new FirestorePermissionError({
           path: hodRef.path,
           operation: 'update',
@@ -103,7 +103,7 @@ export default function AdminHODs() {
               <div className="flex items-center justify-center py-10"><Loader2 className="h-5 w-5 animate-spin" /></div>
             ) : (
               <div className="divide-y divide-white/5">
-                {requests.map((req: any) => (
+                {requests.map((req) => (
                   <div key={req.id} className="p-6 space-y-4 hover:bg-white/5 transition-colors">
                     <div className="flex flex-col gap-1">
                       <span className="font-bold text-sm uppercase text-foreground">{req.fullName}</span>
@@ -162,7 +162,7 @@ export default function AdminHODs() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {activeHods.filter(h => h.fullName?.toLowerCase().includes(search.toLowerCase())).map((hod: any) => (
+                  {activeHods.filter(h => h.fullName?.toLowerCase().includes(search.toLowerCase())).map((hod) => (
                     <TableRow key={hod.id} className="border-white/5 hover:bg-white/5 transition-colors group">
                       <TableCell className="pl-6 py-4">
                         <div className="flex flex-col">

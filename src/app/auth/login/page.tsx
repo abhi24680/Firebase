@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -25,11 +25,18 @@ import { useAuth, useFirestore } from "@/firebase"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { FirebaseError } from "firebase/app"
 import { doc, getDoc } from "firebase/firestore"
-
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid college email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
+
+const ROLE_ROUTES: Record<string, string> = {
+  admin: "/dashboard/admin",
+  hod: "/dashboard/hod",
+  faculty: "/dashboard/faculty",
+  advisor: "/dashboard/advisor",
+  student: "/dashboard/student",
+};
 
 export default function LoginPage() {
   const router = useRouter()
@@ -37,11 +44,6 @@ export default function LoginPage() {
   const db = useFirestore()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -78,7 +80,7 @@ export default function LoginPage() {
         return
       }
 
-      const userData = userDoc.data()
+      const userData = userDoc.data()!
       const role = userData.role
 
       toast({
@@ -86,12 +88,7 @@ export default function LoginPage() {
         description: `Session initialized as ${role?.toUpperCase()}.`,
       })
 
-      if (role === "admin") router.push("/dashboard/admin")
-      else if (role === "hod") router.push("/dashboard/hod")
-      else if (role === "faculty") router.push("/dashboard/faculty")
-      else if (role === "advisor") router.push("/dashboard/advisor")
-      else if (role === "student") router.push("/dashboard/student")
-      else router.push("/dashboard")
+      router.push(ROLE_ROUTES[role] || "/dashboard")
 
     } catch (error: any) {
       console.error("Login Error:", error)
@@ -125,8 +122,6 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
-
-  if (!mounted) return null
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
@@ -212,6 +207,7 @@ export default function LoginPage() {
               REGISTER ACCOUNT
             </Link>
           </Button>
+
           <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground uppercase font-mono tracking-widest opacity-50">
             <ShieldCheck className="h-3 w-3 text-primary" />
             ENCRYPTED_AUTH_ACTIVE

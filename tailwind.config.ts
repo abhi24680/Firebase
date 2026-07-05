@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Space Grotesk', 'sans-serif'],
+        body: ['var(--font-inter)', 'Inter', 'sans-serif'],
+        headline: ['var(--font-space-grotesk)', 'Space Grotesk', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -84,6 +84,16 @@ export default {
         'border-beam': {
           '100%': { 'offset-distance': '100%' },
         },
+        'glow-pulse': {
+          '0%, 100%': { boxShadow: '0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1)' },
+          '50%': { boxShadow: '0 0 30px hsl(var(--primary) / 0.6), 0 0 60px hsl(var(--primary) / 0.3), 0 0 80px hsl(var(--primary) / 0.1)' },
+        },
+        'ping-slow': {
+          '75%, 100%': { transform: 'scale(1.5)', opacity: '0' },
+        },
+        'ping-slower': {
+          '75%, 100%': { transform: 'scale(2)', opacity: '0' },
+        },
       },
       animation: {
         'gradient-x': 'gradient-x 15s ease infinite',
@@ -92,6 +102,9 @@ export default {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'shimmer': 'shimmer 2.5s infinite linear',
         'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear',
+        'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+        'ping-slow': 'ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'ping-slower': 'ping-slower 2.5s cubic-bezier(0, 0, 0.2, 1) infinite',
       },
     },
   },

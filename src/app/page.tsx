@@ -1,25 +1,70 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, BarChart3, Users, Network, Code2, Globe, History, Lightbulb, Rocket, Eye, Target } from "lucide-react"
+import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, Users, Network, History, Lightbulb, Rocket, Eye, Target } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
+const NAV_ITEMS = ['Architecture', 'Technology', 'Journey', 'Infrastructure'];
+const STATS = [
+  { label: "Attendance Accuracy", val: "99.9%", icon: Shield, color: "text-primary" },
+  { label: "AI Count Verification", val: "Real-time", icon: Cpu, color: "text-accent" },
+  { label: "Departments", val: "Multi-Sync", icon: Database, color: "text-primary" },
+  { label: "Energy Optimization", val: "Active", icon: Zap, color: "text-accent" },
+];
+const TECH_PLANS = [
+  { title: "P2PNet AI Integration", desc: "Simulating high-performance vision models for crowd counting without compromising privacy.", icon: Camera, tag: "PHASE_1" },
+  { title: "Decentralized RFID Mesh", desc: "Edge-based authentication nodes that function independently of central network availability.", icon: Network, tag: "PHASE_2" },
+  { title: "Real-time Sync Engine", desc: "Sub-50ms latency for global institutional data synchronization across all terminal nodes.", icon: Zap, tag: "ACTIVE" },
+  { title: "Edge Compute Nodes", desc: "Low-power, high-throughput inference hardware deployed at every classroom ingress point.", icon: Cpu, tag: "PLANNED" },
+];
+
 export default function LandingPage() {
-  const [mounted, setMounted] = useState(false)
+  const [splash, setSplash] = useState(true)
 
   useEffect(() => {
-    setMounted(true)
+    const timer = setTimeout(() => setSplash(false), 2500)
+    return () => clearTimeout(timer)
   }, [])
 
-  if (!mounted) return null
+  if (splash) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.15),transparent_70%)] animate-pulse-slow" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative">
+            <div className="absolute inset-[-100px] rounded-full border border-primary/20 animate-ping-slow" />
+            <div className="absolute inset-[-50px] rounded-full border border-primary/30 animate-ping-slower" />
+            <div className="flex flex-col items-center gap-6 animate-in zoom-in duration-700">
+              <Logo size="lg" />
+              <h1 className="text-7xl md:text-9xl font-headline font-bold tracking-tighter select-none">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient-x text-glow">
+                  EDUGO
+                </span>
+              </h1>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.3em] animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-500">
+                Initializing Infrastructure...
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2">
+          <div className="flex gap-1">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden animate-in fade-in duration-700">
       {/* Background Effects */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-0 left-0 w-full h-full grid-background opacity-20 animate-grid-flow" />
@@ -32,7 +77,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-8">
           <Logo size="lg" />
           <nav className="hidden lg:flex items-center gap-10 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            {['Architecture', 'Technology', 'Journey', 'Infrastructure'].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <Link 
                 key={item} 
                 href={`#${item.toLowerCase()}`} 
@@ -84,72 +129,12 @@ export default function LandingPage() {
 
           {/* Stats Section */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl mt-32 px-4">
-            {[
-              { label: "Attendance Accuracy", val: "99.9%", icon: Shield, color: "text-primary" },
-              { label: "AI Count Verification", val: "Real-time", icon: Cpu, color: "text-accent" },
-              { label: "Departments", val: "Multi-Sync", icon: Database, color: "text-primary" },
-              { label: "Energy Optimization", val: "Active", icon: Zap, color: "text-accent" },
-            ].map((stat, i) => (
+            {STATS.map((stat, i) => (
               <div key={i} className="glass p-6 border-white/5 hover:border-primary/50 transition-all group hover:-translate-y-1">
                 <stat.icon className={cn("h-6 w-6 mb-4", stat.color)} />
                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
                 <p className="text-xl font-headline font-bold">{stat.val}</p>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Technology Plans Section */}
-        <section id="technology" className="py-40 px-8 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-end justify-between mb-24 gap-8">
-            <div className="space-y-4">
-              <Badge variant="outline" className="text-primary border-primary/20 px-4 py-1 text-[10px] font-mono tracking-widest">ROADMAP_2025</Badge>
-              <h2 className="text-5xl md:text-7xl font-headline font-bold leading-none uppercase">Technology Plans</h2>
-            </div>
-            <p className="text-muted-foreground text-sm max-w-md uppercase font-mono tracking-tight leading-relaxed">
-              Engineering the future of autonomous campus environments through a decentralized compute mesh and multi-modal AI inference.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { 
-                title: "P2PNet AI Integration", 
-                desc: "Simulating high-performance vision models for crowd counting without compromising privacy.",
-                icon: Camera,
-                tag: "PHASE_1"
-              },
-              { 
-                title: "Decentralized RFID Mesh", 
-                desc: "Edge-based authentication nodes that function independently of central network availability.",
-                icon: Network,
-                tag: "PHASE_2"
-              },
-              { 
-                title: "Real-time Sync Engine", 
-                desc: "Sub-50ms latency for global institutional data synchronization across all terminal nodes.",
-                icon: Zap,
-                tag: "ACTIVE"
-              },
-              { 
-                title: "Edge Compute Nodes", 
-                desc: "Low-power, high-throughput inference hardware deployed at every classroom ingress point.",
-                icon: Cpu,
-                tag: "PLANNED"
-              }
-            ].map((plan, i) => (
-              <Card key={i} className="bg-sidebar/20 border-white/5 hover:border-primary/50 transition-all p-8 flex flex-col gap-6">
-                <div className="flex items-center justify-between">
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <plan.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <Badge className="text-[8px] font-mono bg-white/5 text-muted-foreground border-none">{plan.tag}</Badge>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-bold uppercase tracking-tight">{plan.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed uppercase font-mono">{plan.desc}</p>
-                </div>
-              </Card>
             ))}
           </div>
         </section>
