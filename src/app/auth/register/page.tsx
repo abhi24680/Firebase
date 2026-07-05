@@ -37,15 +37,15 @@ import { toast } from "@/hooks/use-toast"
 
 const DEPARTMENTS = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"] as const;
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
-const ROLES = ["student", "faculty", "advisor", "hod"] as const;
+const ROLES = ["student", "faculty", "advisor", "hod", "admin"] as const;
 type UserRole = typeof ROLES[number];
 
 const baseSchema = z.object({
   fullName: z.string().min(2, "Required"),
-  email: z.string().email().refine(v => v.endsWith("providence.edu.in"), "Use @providence.edu.in email"),
+  email: z.string().email(),
   password: z.string().min(6, "At least 6 characters"),
   confirmPassword: z.string().min(6, "At least 6 characters"),
-  department: z.string().min(1, "Select department"),
+  department: z.string().optional(),
   rollNumber: z.string().optional(),
   semester: z.string().optional(),
   subject: z.string().optional(),
@@ -91,6 +91,16 @@ export default function RegisterPage() {
     }
     
     setIsLoading(true)
+
+    if (role !== "admin" && !values.email.endsWith("providence.edu.in")) {
+      toast({
+        variant: "destructive",
+        title: "INVALID_EMAIL",
+        description: "Non-admin users must use @providence.edu.in email.",
+      })
+      setIsLoading(false)
+      return
+    }
     
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password)
@@ -102,7 +112,7 @@ export default function RegisterPage() {
         email: values.email,
         role: role,
         department: values.department,
-        isApproved: role === "student",
+        isApproved: role === "student" || role === "admin",
         collegeName: "Providence College of Engineering",
         rollNumber: values.rollNumber || "",
         semester: values.semester || "",
@@ -165,7 +175,7 @@ export default function RegisterPage() {
             setRole(v as UserRole)
             form.reset()
           }}>
-            <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary/50 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-5 mb-8 bg-secondary/50 p-1 rounded-lg">
               {ROLES.map(r => (
                 <TabsTrigger key={r} value={r} className="text-[10px] uppercase tracking-tighter">
                   {r.charAt(0).toUpperCase() + r.slice(1)}
@@ -174,7 +184,7 @@ export default function RegisterPage() {
             </TabsList>
 
             <div className="mb-6">
-              {role === "student" ? (
+              {role === "student" || role === "admin" ? (
                 <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500 rounded-lg">
                   <Info className="h-4 w-4" />
                   <AlertTitle className="text-xs font-bold uppercase tracking-wider">AUTO_APPROVAL_ACTIVE</AlertTitle>
@@ -246,18 +256,20 @@ export default function RegisterPage() {
                   )} />
                 </div>
 
-                <FormField control={form.control} name="department" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Department</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger className="bg-secondary/50 border-white/5"><SelectValue placeholder="Select Academic Unit" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {DEPARTMENTS.map(d => <SelectItem key={d} value={d} className="text-xs uppercase">{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-[10px]" />
-                  </FormItem>
-                )} />
+                {role !== "admin" && (
+                  <FormField control={form.control} name="department" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Department</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl><SelectTrigger className="bg-secondary/50 border-white/5"><SelectValue placeholder="Select Academic Unit" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          {DEPARTMENTS.map(d => <SelectItem key={d} value={d} className="text-xs uppercase">{d}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
+                  )} />
+                )}
 
                 {role === "student" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
