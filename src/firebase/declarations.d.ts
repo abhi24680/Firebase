@@ -16,6 +16,7 @@ declare module 'firebase/auth' {
   export function signInWithEmailAndPassword(auth: Auth, email: string, password: string): Promise<UserCredential>;
   export function createUserWithEmailAndPassword(auth: Auth, email: string, password: string): Promise<UserCredential>;
   export function onAuthStateChanged(auth: Auth, nextOrObserver: (user: User | null) => void): () => void;
+  export function connectAuthEmulator(auth: Auth, url: string, options?: { disableWarnings?: boolean }): void;
 }
 
 declare module 'firebase/firestore' {
@@ -42,5 +43,6 @@ declare module 'firebase/firestore' {
   export function onSnapshot<T = DocumentData>(ref: DocumentReference<T>, onNext: (snapshot: DocumentSnapshot<T>) => void, onError?: (error: Error) => void): () => void;
   export function onSnapshot<T = DocumentData>(query: Query<T>, onNext: (snapshot: QuerySnapshot<T>) => void, onError?: (error: Error) => void): () => void;
   export function serverTimestamp(): any;
+  export function connectFirestoreEmulator(firestore: Firestore, host: string, port: number): void;
   export { Timestamp, FieldValue } from '@firebase/firestore';
 }

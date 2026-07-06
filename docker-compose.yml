@@ -1,5 +1,25 @@
 services:
   # =============================================
+  # Firebase Emulators (Auth + Firestore)
+  # =============================================
+  firebase-emulator:
+    image: node:20-alpine
+    container_name: firebase-emulator
+    working_dir: /emulators
+    ports:
+      - "4001:4001"
+      - "8080:8080"
+      - "9099:9099"
+    volumes:
+      - ./firebase.json:/emulators/firebase.json
+      - ./firestore.rules:/emulators/firestore.rules
+    command: sh -c "npm install -g firebase-tools@latest && firebase emulators:start --project=demo-project"
+    restart: unless-stopped
+    profiles:
+      - prod
+      - dev
+
+  # =============================================
   # Next.js App (Production build via Dockerfile)
   # =============================================
   app:
@@ -9,17 +29,22 @@ services:
         - DOCKER_BUILD=true
     image: nextn-app
     container_name: nextn-app
+    depends_on:
+      - firebase-emulator
     ports:
       - "9002:9002"
     environment:
       - NODE_ENV=production
       - PORT=9002
-      - NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY:-demo-api-key}
-      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:-demo.firebaseapp.com}
-      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID:-demo-project}
-      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:-demo.appspot.com}
-      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-000000000000}
-      - NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID:-1:000000000000:web:0000000000000000}
+      - NEXT_PUBLIC_USE_EMULATOR=true
+      - NEXT_PUBLIC_EMULATOR_HOST=firebase-emulator
+      - FIREBASE_EMULATOR_HOST=firebase-emulator:9099
+      - NEXT_PUBLIC_FIREBASE_API_KEY=demo-api-key
+      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo.firebaseapp.com
+      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-project
+      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=demo.appspot.com
+      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=000000000000
+      - NEXT_PUBLIC_FIREBASE_APP_ID=1:000000000000:web:0000000000000000
       - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY:-}
       - FIREBASE_SERVICE_ACCOUNT_KEY=${FIREBASE_SERVICE_ACCOUNT_KEY:-}
     restart: unless-stopped
@@ -32,6 +57,8 @@ services:
   app-dev:
     image: node:20-alpine
     container_name: nextn-dev
+    depends_on:
+      - firebase-emulator
     working_dir: /app
     volumes:
       - .:/app
@@ -41,12 +68,15 @@ services:
       - "9002:9002"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY:-demo-api-key}
-      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:-demo.firebaseapp.com}
-      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID:-demo-project}
-      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:-demo.appspot.com}
-      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-000000000000}
-      - NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID:-1:000000000000:web:0000000000000000}
+      - NEXT_PUBLIC_USE_EMULATOR=true
+      - NEXT_PUBLIC_EMULATOR_HOST=firebase-emulator
+      - FIREBASE_EMULATOR_HOST=firebase-emulator:9099
+      - NEXT_PUBLIC_FIREBASE_API_KEY=demo-api-key
+      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo.firebaseapp.com
+      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-project
+      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=demo.appspot.com
+      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=000000000000
+      - NEXT_PUBLIC_FIREBASE_APP_ID=1:000000000000:web:0000000000000000
       - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY:-}
       - FIREBASE_SERVICE_ACCOUNT_KEY=${FIREBASE_SERVICE_ACCOUNT_KEY:-}
     command: sh -c "npm install && npm run dev"

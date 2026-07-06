@@ -8,6 +8,11 @@ function initAdmin() {
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project'
 
+  if (process.env.FIREBASE_EMULATOR_HOST) {
+    process.env.FIRESTORE_EMULATOR_HOST = process.env.FIREBASE_EMULATOR_HOST
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_EMULATOR_HOST
+  }
+
   if (serviceAccount) {
     try {
       const credentials = JSON.parse(
