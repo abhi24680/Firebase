@@ -29,10 +29,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowRight, Loader2, Info, Eye, EyeOff } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
-import { useAuth, useFirestore } from "@/firebase"
-import { createUserWithEmailAndPassword } from "firebase/auth"
-import { FirebaseError } from "firebase/app"
-import { doc, setDoc } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
 
 const DEPARTMENTS = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"] as const;
@@ -58,8 +54,6 @@ const baseSchema = z.object({
 
 export default function RegisterPage() {
   const router = useRouter()
-  const auth = useAuth()
-  const db = useFirestore()
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState<UserRole>("student")
   const [showPassword, setShowPassword] = useState(false)
@@ -81,15 +75,6 @@ export default function RegisterPage() {
   })
 
   async function onSubmit(values: z.infer<typeof baseSchema>) {
-    if (!auth || !db) {
-      toast({
-        variant: "destructive",
-        title: "FIREBASE_UNINITIALIZED",
-        description: "The authentication service is not yet ready. Please check your configuration.",
-      })
-      return
-    }
-    
     setIsLoading(true)
 
     if (role !== "admin" && !values.email.endsWith("providence.edu.in")) {
@@ -103,26 +88,27 @@ export default function RegisterPage() {
     }
     
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password)
-      const user = userCredential.user
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+          fullName: values.fullName,
+          role,
+          department: values.department,
+          rollNumber: values.rollNumber,
+          semester: values.semester,
+          subject: values.subject,
+          designation: values.designation,
+          assignedBatch: values.assignedBatch,
+        }),
+      })
 
-      const userData = {
-        uid: user.uid,
-        fullName: values.fullName,
-        email: values.email,
-        role: role,
-        department: values.department,
-        isApproved: role === "student" || role === "admin",
-        collegeName: "Providence College of Engineering",
-        rollNumber: values.rollNumber || "",
-        semester: values.semester || "",
-        subject: values.subject || "",
-        designation: values.designation || "",
-        assignedBatch: values.assignedBatch || "",
-        createdAt: new Date().toISOString(),
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Registration failed')
       }
-
-      await setDoc(doc(db, "users", user.uid), userData)
 
       toast({
         title: "ACCOUNT_CREATED",
@@ -132,25 +118,10 @@ export default function RegisterPage() {
       router.push("/auth/login")
     } catch (error: any) {
       console.error("Registration Error:", error)
-      let errorMessage = "Could not initialize account node."
-      
-      if (error instanceof FirebaseError) {
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            errorMessage = "This email is already registered."
-            break
-          case 'auth/operation-not-allowed':
-            errorMessage = "Email/Password auth is not enabled in Firebase Console."
-            break
-          default:
-            errorMessage = error.message
-        }
-      }
-
       toast({
         variant: "destructive",
         title: "REGISTRATION_FAILED",
-        description: errorMessage,
+        description: error.message || "Could not initialize account node.",
       })
     } finally {
       setIsLoading(false)
