@@ -3,24 +3,18 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Shield, Activity, Cpu, Database, ArrowRight, Camera, Zap, Users, Network, History, Lightbulb, Rocket, Eye, Target } from "lucide-react"
+import { Shield, Cpu, Database, ArrowRight, Zap, History, Lightbulb, Rocket, Eye, Target } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
-const NAV_ITEMS = ['Architecture', 'Technology', 'Journey', 'Infrastructure'];
+const NAV_ITEMS = ['Architecture', 'Journey', 'Infrastructure'];
 const STATS = [
   { label: "Attendance Accuracy", val: "99.9%", icon: Shield, color: "text-primary" },
   { label: "AI Count Verification", val: "Real-time", icon: Cpu, color: "text-accent" },
   { label: "Departments", val: "Multi-Sync", icon: Database, color: "text-primary" },
   { label: "Energy Optimization", val: "Active", icon: Zap, color: "text-accent" },
-];
-const TECH_PLANS = [
-  { title: "P2PNet AI Integration", desc: "Simulating high-performance vision models for crowd counting without compromising privacy.", icon: Camera, tag: "PHASE_1" },
-  { title: "Decentralized RFID Mesh", desc: "Edge-based authentication nodes that function independently of central network availability.", icon: Network, tag: "PHASE_2" },
-  { title: "Real-time Sync Engine", desc: "Sub-50ms latency for global institutional data synchronization across all terminal nodes.", icon: Zap, tag: "ACTIVE" },
-  { title: "Edge Compute Nodes", desc: "Low-power, high-throughput inference hardware deployed at every classroom ingress point.", icon: Cpu, tag: "PLANNED" },
 ];
 
 interface Ripple {
