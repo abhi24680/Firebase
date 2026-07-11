@@ -19,7 +19,12 @@ import {
   ShieldCheck,
   Send,
   Link as LinkIcon,
-  UserCog
+  UserCog,
+  UserPlus,
+  Bell,
+  FileText,
+  Radio,
+  Zap
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -49,6 +54,7 @@ const NAV_GROUPS: Record<string, NavItem[]> = {
     { title: "Student Directory", url: "/dashboard/admin/students", icon: Users },
     { title: "Inference Node", url: "/dashboard/admin/camera", icon: Camera },
     { title: "System Settings", url: "/dashboard/admin/settings", icon: Settings },
+    { title: "Registration", url: "/dashboard/admin/register", icon: UserPlus },
   ],
   hod: [
     { title: "Dept Overview", url: "/dashboard/hod", icon: LayoutDashboard },
@@ -75,6 +81,11 @@ const NAV_GROUPS: Record<string, NavItem[]> = {
   ],
   student: [
     { title: "My Terminal", url: "/dashboard/student", icon: LayoutDashboard },
+    { title: "Attendance", url: "/dashboard/student/attendance", icon: ClipboardCheck },
+    { title: "Timetable", url: "/dashboard/student/timetable", icon: Calendar },
+    { title: "Leave Request", url: "/dashboard/student/leave", icon: Send },
+    { title: "Notifications", url: "/dashboard/student/notifications", icon: Bell },
+    { title: "Surveys", url: "/dashboard/student/survey", icon: FileText },
   ]
 };
 

@@ -1,10 +1,8 @@
-
 import type {Metadata} from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
-import { FirebaseClientProvider } from "@/firebase";
-import { DemoProvider } from "@/firebase/demo-context";
+import { AuthProvider } from "@/lib/auth-context";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -20,7 +18,7 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: 'Edugo',
-  description: 'Industrial-grade RFID and AI crowd-counting attendance marking system.',
+  description: 'AI-Powered Smart Classroom Infrastructure for Automated Attendance, Occupancy Intelligence, Energy Optimization, and Institutional Analytics.',
 };
 
 export default function RootLayout({
@@ -31,11 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased selection:bg-primary selection:text-primary-foreground">
-        <DemoProvider>
-          <FirebaseClientProvider>
-            {children}
-          </FirebaseClientProvider>
-        </DemoProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

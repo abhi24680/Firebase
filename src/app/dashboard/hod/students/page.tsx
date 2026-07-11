@@ -86,7 +86,7 @@ export default function HODStudents() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-[10px] font-mono border-white/5 uppercase">SEM_{s.sem}</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono border-white/5 uppercase">SEM {s.sem}</Badge>
                   </TableCell>
                   <TableCell className="min-w-[180px]">
                     <div className="space-y-2 max-w-[140px]">

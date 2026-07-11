@@ -1,36 +1,73 @@
 
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { StudentAttendance } from "@/components/dashboard/student-attendance"
-import { LeaveRequestForm } from "@/components/dashboard/leave-request-form"
-import { SurveyView } from "@/components/dashboard/survey-view"
-import { StudentNotifications } from "@/components/dashboard/student-notifications"
-import { TimetableView } from "@/components/dashboard/timetable-view"
-import { Bell, ClipboardCheck, FileText, Calendar, Send, User, Loader2 } from "lucide-react"
-import { useUser, useDoc, useFirestore } from "@/firebase"
-import { doc } from "firebase/firestore"
+import { Progress } from "@/components/ui/progress"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { User, Loader2, CheckCircle2, AlertTriangle } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
+import { cn } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+interface Profile {
+  fullName: string
+  rollNumber: string
+  department: string
+  semester: string
+  assignedBatch: string
+}
 
 export default function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState("attendance")
   const [mounted, setMounted] = useState(false)
-  const { user, loading: authLoading } = useUser()
-  const db = useFirestore()
-
-  const userDocRef = useMemo(() => {
-    if (!db || !user?.uid) return null
-    return doc(db, "users", user.uid)
-  }, [db, user?.uid])
-
-  const { data: profile, loading: profileLoading } = useDoc(userDocRef)
+  const { user, token, refresh } = useAuth()
+  const [editing, setEditing] = useState(false)
+  const [editSemester, setEditSemester] = useState("")
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted || authLoading || profileLoading) {
+  const profile: Profile | null = user ? {
+    fullName: user.fullName,
+    rollNumber: user.rollNumber,
+    department: user.department,
+    semester: user.semester,
+    assignedBatch: (user as any).assignedBatch || '',
+  } : null
+
+  useEffect(() => {
+    if (user) setEditSemester(user.semester)
+  }, [user])
+
+  async function handleSaveSemester() {
+    if (!editSemester.trim() || editSemester === user?.semester) {
+      setEditing(false)
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken: token, semester: editSemester.trim() }),
+      })
+      if (!res.ok) throw new Error("Failed to update semester")
+      await refresh()
+      toast({ title: "SEMESTER_UPDATED", description: `Semester set to ${editSemester.trim()}.` })
+      setEditing(false)
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "UPDATE_FAILED", description: error.message })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!mounted || !token) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -47,6 +84,11 @@ export default function StudentDashboard() {
     )
   }
 
+  const overallAttendance = 83
+  const classesAttended = 62
+  const classesTotal = 75
+  const attendanceColor = overallAttendance >= 75 ? "text-emerald-500" : overallAttendance >= 60 ? "text-amber-500" : "text-destructive"
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -60,69 +102,66 @@ export default function StudentDashboard() {
           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-mono">
             RFID_CONNECTED
           </Badge>
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono uppercase">
-            SEM_{profile.semester || 'X'}
-          </Badge>
+          {editing ? (
+            <Input
+              value={editSemester}
+              onChange={(e) => setEditSemester(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSaveSemester(); if (e.key === "Escape") { setEditing(false); setEditSemester(user?.semester || ""); } }}
+              className="h-6 w-16 text-[10px] bg-secondary/50"
+              placeholder="7"
+              autoFocus
+            />
+          ) : (
+            <Badge
+              variant="outline"
+              className="bg-primary/10 text-primary border-primary/20 font-mono uppercase cursor-pointer hover:bg-primary/20"
+              onClick={() => setEditing(true)}
+            >
+              SEM {profile.semester || 'X'}
+            </Badge>
+          )}
         </div>
       </div>
 
-      <Tabs defaultValue="attendance" className="w-full" onValueChange={setActiveTab}>
-        <div className="flex flex-col lg:flex-row gap-8">
-          <TabsList className="flex flex-row lg:flex-col h-auto gap-1 bg-secondary/30 p-1 lg:w-64 rounded-xl border border-white/5 shrink-0 overflow-x-auto">
-            <TabsTrigger value="attendance" className="flex-1 lg:flex-none justify-start text-[10px] uppercase font-bold tracking-widest py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white">
-              <ClipboardCheck className="h-3.5 w-3.5 mr-3 shrink-0" />
-              Attendance
-            </TabsTrigger>
-            <TabsTrigger value="timetable" className="flex-1 lg:flex-none justify-start text-[10px] uppercase font-bold tracking-widest py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white">
-              <Calendar className="h-3.5 w-3.5 mr-3 shrink-0" />
-              Timetable
-            </TabsTrigger>
-            <TabsTrigger value="leave" className="flex-1 lg:flex-none justify-start text-[10px] uppercase font-bold tracking-widest py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white">
-              <Send className="h-3.5 w-3.5 mr-3 shrink-0" />
-              Leave Request
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex-1 lg:flex-none justify-start text-[10px] uppercase font-bold tracking-widest py-3 px-4 relative data-[state=active]:bg-primary data-[state=active]:text-white">
-              <Bell className="h-3.5 w-3.5 mr-3 shrink-0" />
-              Notifications
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
-            </TabsTrigger>
-            <TabsTrigger value="survey" className="flex-1 lg:flex-none justify-start text-[10px] uppercase font-bold tracking-widest py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white">
-              <FileText className="h-3.5 w-3.5 mr-3 shrink-0" />
-              Surveys
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="flex-1 min-w-0">
-            <TabsContent value="attendance" className="mt-0 outline-none space-y-6">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                <h2 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted-foreground">Compliance Analytics</h2>
-              </div>
-              <StudentAttendance />
-            </TabsContent>
-
-            <TabsContent value="timetable" className="mt-0 outline-none space-y-6">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                <h2 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted-foreground">Master Schedule: {profile.assignedBatch || 'GENERAL'}</h2>
-              </div>
-              <TimetableView />
-            </TabsContent>
-
-            <TabsContent value="leave" className="mt-0 outline-none">
-              <LeaveRequestForm />
-            </TabsContent>
-
-            <TabsContent value="notifications" className="mt-0 outline-none">
-              <StudentNotifications />
-            </TabsContent>
-
-            <TabsContent value="survey" className="mt-0 outline-none">
-              <SurveyView />
-            </TabsContent>
-          </div>
-        </div>
-      </Tabs>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-sidebar/30 border-sidebar-border col-span-1">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Overall Attendance</span>
+              <Badge variant="outline" className={cn("text-[9px] font-mono", attendanceColor)}>
+                {overallAttendance}%
+              </Badge>
+            </div>
+            <Progress value={overallAttendance} className={cn("h-2", overallAttendance < 60 ? "bg-destructive/20" : overallAttendance < 75 ? "bg-amber-500/20" : "bg-white/5")} />
+            <div className="flex justify-between mt-2 text-[9px] font-mono text-muted-foreground">
+              <span>{classesAttended} attended</span>
+              <span>{classesTotal} total</span>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-sidebar/30 border-sidebar-border">
+          <CardContent className="p-5 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-lg font-headline font-bold text-emerald-500">62</p>
+              <p className="text-[8px] font-mono text-muted-foreground uppercase tracking-wider">Present This Month</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-sidebar/30 border-sidebar-border">
+          <CardContent className="p-5 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-lg font-headline font-bold text-amber-500">13</p>
+              <p className="text-[8px] font-mono text-muted-foreground uppercase tracking-wider">Absences</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

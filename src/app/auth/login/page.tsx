@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -18,17 +17,17 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-react"
+import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff, GraduationCap, Users, BookOpen, LayoutDashboard, UserCog } from "lucide-react"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
-import { useAuth, useFirestore } from "@/firebase"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { FirebaseError } from "firebase/app"
-import { doc, getDoc } from "firebase/firestore"
-const loginSchema = z.object({
-  email: z.string().email("Please enter a valid college email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-})
+import { useAuth } from "@/lib/auth-context"
+
+  const loginSchema = z.object({
+    email: z.string().email("Please enter a valid college email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+  })
+
+  const RESTRICTED_DOMAIN = "@student.providence.edu.in"
 
 const ROLE_ROUTES: Record<string, string> = {
   admin: "/dashboard/admin",
@@ -40,10 +39,30 @@ const ROLE_ROUTES: Record<string, string> = {
 
 export default function LoginPage() {
   const router = useRouter()
-  const auth = useAuth()
-  const db = useFirestore()
+  const { login, demoLogin, logout } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  const DEMO_ACCOUNTS = [
+    { role: "admin", label: "Admin", icon: LayoutDashboard, name: "Dr. Admin", dept: "CSE", color: "text-red-500", border: "border-red-500/20 hover:border-red-500/40" },
+    { role: "hod", label: "HOD", icon: UserCog, name: "Dr. HOD", dept: "CSE", color: "text-purple-500", border: "border-purple-500/20 hover:border-purple-500/40" },
+    { role: "faculty", label: "Faculty", icon: BookOpen, name: "Dr. Faculty", dept: "CSE", color: "text-blue-500", border: "border-blue-500/20 hover:border-blue-500/40" },
+    { role: "advisor", label: "Advisor", icon: Users, name: "Prof. Advisor", dept: "CSE", color: "text-amber-500", border: "border-amber-500/20 hover:border-amber-500/40" },
+    { role: "student", label: "Student", icon: GraduationCap, name: "Demo Student", dept: "CSE", color: "text-emerald-500", border: "border-emerald-500/20 hover:border-emerald-500/40", roll: "CSE23-099", sem: "3" },
+  ]
+
+  function handleDemoLogin(account: typeof DEMO_ACCOUNTS[number]) {
+    demoLogin({
+      role: account.role,
+      fullName: account.name,
+      email: `${account.role}@demo.edu`,
+      department: account.dept,
+      rollNumber: account.role === "student" ? "CSE23-099" : undefined,
+      semester: account.role === "student" ? "3" : undefined,
+    })
+    toast({ title: `DEMO_MODE_ACTIVE`, description: `Logged in as ${account.label}.` })
+    router.push(`/dashboard/${account.role}`)
+  }
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -54,69 +73,27 @@ export default function LoginPage() {
   })
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    if (!auth || !db) {
-      toast({
-        variant: "destructive",
-        title: "FIREBASE_UNINITIALIZED",
-        description: "The authentication service is not yet ready. Please check your configuration.",
-      })
-      return
-    }
-    
     setIsLoading(true)
-    
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password)
-      const user = userCredential.user
 
-      const userDoc = await getDoc(doc(db, "users", user.uid))
-      
-      if (!userDoc.exists()) {
-        toast({
-          variant: "destructive",
-          title: "PROFILE_NOT_FOUND",
-          description: "Account exists in Auth, but no academic profile was found in Firestore.",
-        })
+    try {
+      const userData = await login(values.email, values.password)
+
+      if (userData.role !== "admin" && !values.email.endsWith(RESTRICTED_DOMAIN)) {
+        await logout()
+        toast({ variant: "destructive", title: "AUTH_FAILED", description: "Non-admin accounts must use a @student.providence.edu.in email." })
         return
       }
 
-      const userData = userDoc.data()!
-      const role = userData.role
-
       toast({
         title: "AUTH_SUCCESS",
-        description: `Session initialized as ${role?.toUpperCase()}.`,
+        description: `Session initialized as ${userData?.role?.toUpperCase()}.`,
       })
-
-      router.push(ROLE_ROUTES[role] || "/dashboard")
-
+      router.push(ROLE_ROUTES[userData?.role] || "/dashboard")
     } catch (error: any) {
-      console.error("Login Error:", error)
-      let errorMessage = "Invalid credentials provided."
-      
-      if (error instanceof FirebaseError) {
-        switch (error.code) {
-          case 'auth/user-not-found':
-            errorMessage = "No node found with this email."
-            break
-          case 'auth/wrong-password':
-            errorMessage = "Incorrect password node."
-            break
-          case 'auth/invalid-credential':
-            errorMessage = "Invalid login credentials."
-            break
-          case 'auth/invalid-api-key':
-            errorMessage = "Firebase API key is invalid or missing in src/firebase/config.ts."
-            break
-          default:
-            errorMessage = error.message
-        }
-      }
-
       toast({
         variant: "destructive",
         title: "AUTH_FAILED",
-        description: errorMessage,
+        description: error.message || "Invalid credentials provided.",
       })
     } finally {
       setIsLoading(false)
@@ -148,7 +125,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">ID / College Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="user@providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
+                      <Input placeholder="yourname@student.providence.edu.in" {...field} className="bg-secondary/50 border-white/5 focus:border-primary/50 transition-colors" />
                     </FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
@@ -182,7 +159,13 @@ export default function LoginPage() {
                 )}
               />
 
-              <Button type="submit" className="w-full h-11 font-bold group mt-4 shadow-lg shadow-primary/20" disabled={isLoading}>
+              <div className="flex justify-end">
+                <Link href="/auth/forgot-password" className="text-[10px] text-muted-foreground hover:text-primary uppercase font-mono tracking-widest transition-colors">
+                  FORGOT PASSWORD?
+                </Link>
+              </div>
+
+              <Button type="submit" className="w-full h-11 font-bold group shadow-lg shadow-primary/20" disabled={isLoading}>
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -196,6 +179,25 @@ export default function LoginPage() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col gap-4 pt-2">
+          <div className="flex items-center gap-4 w-full">
+            <div className="h-px bg-white/5 flex-1" />
+            <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest">Demo Access</span>
+            <div className="h-px bg-white/5 flex-1" />
+          </div>
+          <div className="grid grid-cols-5 gap-2 w-full">
+            {DEMO_ACCOUNTS.map((acc) => (
+              <Button
+                key={acc.role}
+                variant="outline"
+                className={`flex flex-col items-center gap-1 h-auto py-3 px-1 border ${acc.border} hover:bg-white/5`}
+                onClick={() => handleDemoLogin(acc)}
+              >
+                <acc.icon className={`h-4 w-4 ${acc.color}`} />
+                <span className={`text-[8px] uppercase font-bold ${acc.color}`}>{acc.label}</span>
+              </Button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-4 w-full">
             <div className="h-px bg-white/5 flex-1" />
             <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest">New Node?</span>

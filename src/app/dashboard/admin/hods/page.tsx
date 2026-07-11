@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { ShieldAlert, UserMinus, ShieldCheck, Mail, Building2, Search, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,65 +15,104 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { toast } from "@/hooks/use-toast"
-import { useFirestore, useCollection } from "@/firebase"
-import { collection, query, where, doc, updateDoc } from "firebase/firestore"
-import { errorEmitter } from "@/firebase/error-emitter"
-import { FirestorePermissionError } from "@/firebase/errors"
+import { useAuth } from "@/lib/auth-context"
+
+interface HOD {
+  id: string
+  fullName: string
+  email: string
+  department: string
+  isApproved: boolean
+}
 
 export default function AdminHODs() {
   const [search, setSearch] = useState("")
-  const db = useFirestore()
+  const [hods, setHods] = useState<HOD[]>([])
+  const [loading, setLoading] = useState(true)
+  const { token } = useAuth()
 
-  const allHodsQuery = useMemo(() => {
-    if (!db) return null
-    return query(collection(db, "users"), where("role", "==", "hod"))
-  }, [db])
+  useEffect(() => {
+    if (!token) return
+    let cancelled = false
 
-  const { data: hods, loading } = useCollection(allHodsQuery)
-
-  const requests = useMemo(() => hods?.filter(h => !h.isApproved) || [], [hods])
-  const activeHods = useMemo(() => hods?.filter(h => h.isApproved) || [], [hods])
-
-  const handleApprove = (hodId: string) => {
-    if (!db) return
-    const hodRef = doc(db, "users", hodId)
-    updateDoc(hodRef, { isApproved: true })
-      .then(() => {
-        toast({
-          title: "HOD_AUTHORIZED",
-          description: "Administrative credentials granted to node.",
+    async function load() {
+      try {
+        const res = await fetch('/api/users?role=hod', {
+          headers: { Authorization: `Bearer ${token}` },
         })
+        if (!res.ok) throw new Error('Failed to load')
+        const data = await res.json()
+        if (!cancelled) setHods(data.users)
+      } catch {
+        if (!cancelled) setHods([])
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => { cancelled = true }
+  }, [token])
+
+  const handleApprove = async (hodId: string) => {
+    if (!token) return
+
+    try {
+      const res = await fetch(`/api/users/${hodId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isApproved: true }),
       })
-      .catch(async () => {
-        const permissionError = new FirestorePermissionError({
-          path: hodRef.path,
-          operation: 'update',
-          requestResourceData: { isApproved: true },
-        })
-        errorEmitter.emit('permission-error', permissionError)
+      if (!res.ok) throw new Error('Approval failed')
+      const data = await res.json()
+      setHods(prev => prev.map(h => h.id === hodId ? { ...h, ...data.user } : h))
+      toast({
+        title: "HOD_AUTHORIZED",
+        description: "Administrative credentials granted to node.",
       })
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "APPROVAL_FAILED",
+        description: "Could not authorize HOD node.",
+      })
+    }
   }
 
-  const handleDecommission = (hodId: string) => {
-    if (!db) return
-    const hodRef = doc(db, "users", hodId)
-    updateDoc(hodRef, { isApproved: false })
-      .then(() => {
-        toast({
-          variant: "destructive",
-          title: "HOD_DECOMMISSIONED",
-          description: "Administrative access revoked.",
-        })
+  const handleDecommission = async (hodId: string) => {
+    if (!token) return
+
+    try {
+      const res = await fetch(`/api/users/${hodId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isApproved: false }),
       })
-      .catch(async () => {
-        const permissionError = new FirestorePermissionError({
-          path: hodRef.path,
-          operation: 'update',
-          requestResourceData: { isApproved: false },
-        })
-        errorEmitter.emit('permission-error', permissionError)
+      if (!res.ok) throw new Error('Decommission failed')
+      const data = await res.json()
+      setHods(prev => prev.map(h => h.id === hodId ? { ...h, ...data.user } : h))
+      toast({
+        variant: "destructive",
+        title: "HOD_DECOMMISSIONED",
+        description: "Administrative access revoked.",
       })
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "DECOMMISSION_FAILED",
+        description: "Could not decommission HOD node.",
+      })
+    }
   }
+
+  const requests = useMemo(() => hods.filter(h => !h.isApproved), [hods])
+  const activeHods = useMemo(() => hods.filter(h => h.isApproved), [hods])
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

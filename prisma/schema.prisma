@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  authUid       String   @unique @default("")
+  fullName      String
+  email         String   @unique
+  passwordHash  String   @default("")
+  role          String
+  department    String   @default("")
+  isApproved    Boolean  @default(false)
+  collegeName   String   @default("Providence College of Engineering")
+  rollNumber    String   @default("")
+  semester      String   @default("")
+  subject       String   @default("")
+  designation   String   @default("")
+  assignedBatch String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  attendance    Attendance[]
+  leaveRequests LeaveRequest[]
+  rfidScans     RfidScan[]
+  notifications Notification[]
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  status    String
+  subject   String
+  markedBy  String?
+  createdAt DateTime @default(now())
+}
+
+model LeaveRequest {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate  DateTime
+  endDate    DateTime
+  reason     String
+  status     String   @default("pending")
+  approvedBy String?
+  createdAt  DateTime @default(now())
+}
+
+model Survey {
+  id        String   @id @default(cuid())
+  title     String
+  questions String
+  createdBy String
+  createdAt DateTime @default(now())
+}
+
+model RfidScan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  cardId    String
+  timestamp DateTime @default(now())
+  method    String   @default("rfid")
+}
+
+model Room {
+  id        String           @id @default(cuid())
+  name      String
+  building  String
+  capacity  Int
+  scans     RfidScan[]
+  devices   RoomDevice[]
+  occupancy RoomOccupancy[]
+}
+
+model RoomDevice {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id])
+  name        String
+  type        String
+  status      String   @default("off")
+  lastChanged DateTime @default(now())
+}
+
+model RoomOccupancy {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  count     Int
+  capacity  Int
+  timestamp DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("info")
+  severity  String   @default("low")
+  read      Boolean  @default(false)
+  metadata  String?
+  createdAt DateTime @default(now())
+}

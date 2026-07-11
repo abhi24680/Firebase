@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { 
   Sidebar, 
   SidebarProvider, 
@@ -18,10 +17,18 @@ import { Logo } from "@/components/logo"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
-import { useUser, useDoc, useFirestore } from "@/firebase"
-import { doc, updateDoc } from "firebase/firestore"
-import { errorEmitter } from '@/firebase/error-emitter'
-import { FirestorePermissionError } from '@/firebase/errors'
+import { useAuth } from "@/lib/auth-context"
+
+interface Profile {
+  id: string
+  fullName: string
+  email: string
+  role: string
+  department: string
+  isApproved: boolean
+  rollNumber: string
+  semester: string
+}
 
 export default function DashboardLayout({
   children,
@@ -29,51 +36,70 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const firestore = useFirestore()
-  const { user, loading: userLoading } = useUser()
-  
-  const userDocRef = useMemo(() => {
-    if (!firestore || !user?.uid) return null
-    return doc(firestore, "users", user.uid)
-  }, [firestore, user?.uid])
-
-  const { data: profile, loading: profileLoading } = useDoc(userDocRef)
-
-  const [isSimulatingApproval, setIsSimulatingApproval] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const { user, token, refresh } = useAuth()
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    if (loading === false) return
+    if (!token) {
+      router.push("/auth/login")
+      return
+    }
+    let cancelled = false
+
+    async function load() {
+      try {
+        if (user) {
+          if (!cancelled) setProfile(user)
+          setLoading(false)
+          return
+        }
+        await refresh()
+      } catch {
+        if (!cancelled) router.push("/auth/login")
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => { cancelled = true }
+  }, [token, user, router, refresh, loading])
 
   const role = profile?.role || 'student'
   const isApproved = profile?.isApproved || role === 'admin'
 
-  const simulateApproval = () => {
-    if (!userDocRef) return
-    setIsSimulatingApproval(true)
-    
-    updateDoc(userDocRef, { isApproved: true })
-      .then(() => {
-        setIsSimulatingApproval(false)
-        const approver = role === 'hod' ? 'System Administrator' : 'Head of Department'
-        toast({
-          title: "ACCESS_GRANTED",
-          description: `${approver} has authorized your node credentials.`,
-        })
+  const simulateApproval = async () => {
+    if (!token || !profile) return
+
+    try {
+      const res = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isApproved: true }),
       })
-      .catch(async (error: any) => {
-        setIsSimulatingApproval(false)
-        const permissionError = new FirestorePermissionError({
-          path: userDocRef.path,
-          operation: 'update',
-          requestResourceData: { isApproved: true },
-        });
-        errorEmitter.emit('permission-error', permissionError);
+      if (!res.ok) throw new Error('Approval failed')
+      const data = await res.json()
+      setProfile(data.user)
+      const approver = role === 'hod' ? 'System Administrator' : 'Head of Department'
+      toast({
+        title: "ACCESS_GRANTED",
+        description: `${approver} has authorized your node credentials.`,
       })
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "APPROVAL_FAILED",
+        description: "Could not complete authorization.",
+      })
+    }
   }
 
-  if (!mounted || userLoading || profileLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -81,8 +107,7 @@ export default function DashboardLayout({
     )
   }
 
-  if (!user) {
-    router.push("/auth/login")
+  if (!profile) {
     return null
   }
 
@@ -109,7 +134,7 @@ export default function DashboardLayout({
             <p className="text-muted-foreground uppercase text-[10px] mb-2 tracking-widest">System Metadata:</p>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="truncate">NODE_ID: {user.uid.substring(0, 8).toUpperCase()}</span>
+              <span className="truncate">NODE_ID: {profile.id.substring(0, 8).toUpperCase()}</span>
             </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="h-2 w-2 rounded-full bg-muted" />
@@ -121,16 +146,9 @@ export default function DashboardLayout({
             <Button 
               className="w-full bg-primary font-bold uppercase tracking-tighter" 
               onClick={simulateApproval}
-              disabled={isSimulatingApproval}
             >
-              {isSimulatingApproval ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Simulate {role === 'hod' ? 'Admin' : 'HOD'} Approval
-                </>
-              )}
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Simulate {role === 'hod' ? 'Admin' : 'HOD'} Approval
             </Button>
             <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
               <Link href="/auth/login">
@@ -165,7 +183,7 @@ export default function DashboardLayout({
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-semibold truncate uppercase">{profile?.fullName || 'Verified Node'}</p>
+                <p className="text-sm font-semibold truncate uppercase">{profile.fullName}</p>
                 <p className="text-xs text-muted-foreground truncate uppercase font-mono tracking-tighter">
                   {role}-NODE-PRC
                 </p>
@@ -187,7 +205,6 @@ export default function DashboardLayout({
                 />
               </div>
             </div>
-
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground relative">
                 <Bell className="h-5 w-5" />

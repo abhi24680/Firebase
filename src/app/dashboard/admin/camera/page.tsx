@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
-import { analyzeCrowd } from "@/ai/flows/analyze-crowd-flow"
+import { analyzeCrowd } from "@/ai/flows/students-count"
 
 export default function AdminCamera() {
   const [source, setSource] = useState("laptop")

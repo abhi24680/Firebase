@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -30,6 +29,7 @@ import { ArrowRight, Loader2, Info, Eye, EyeOff } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
 
 const DEPARTMENTS = ["CSE", "ECE", "ME", "CE", "EEE", "AI", "Cyber Security"] as const;
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -51,6 +51,14 @@ const baseSchema = z.object({
   message: "Passwords don't match",
   path: ["confirmPassword"],
 })
+
+const ROLE_ROUTES: Record<string, string> = {
+  admin: "/dashboard/admin",
+  hod: "/dashboard/hod",
+  faculty: "/dashboard/faculty",
+  advisor: "/dashboard/advisor",
+  student: "/dashboard/student",
+};
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -74,50 +82,46 @@ export default function RegisterPage() {
     },
   })
 
+  const { register } = useAuth()
+
   async function onSubmit(values: z.infer<typeof baseSchema>) {
     setIsLoading(true)
 
-    if (role !== "admin" && !values.email.endsWith("providence.edu.in")) {
-      toast({
-        variant: "destructive",
-        title: "INVALID_EMAIL",
-        description: "Non-admin users must use @providence.edu.in email.",
-      })
+    const RESTRICTED_DOMAIN = "@student.providence.edu.in"
+    const localPart = values.email.split("@")[0]?.toLowerCase() || ""
+    if (role !== "admin" && !values.email.endsWith(RESTRICTED_DOMAIN) && localPart !== "admin") {
+      toast({ variant: "destructive", title: "REGISTRATION_FAILED", description: "Non-admin accounts must use @student.providence.edu.in email." })
       setIsLoading(false)
       return
     }
-    
+
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-          fullName: values.fullName,
-          role,
-          department: values.department,
-          rollNumber: values.rollNumber,
-          semester: values.semester,
-          subject: values.subject,
-          designation: values.designation,
-          assignedBatch: values.assignedBatch,
-        }),
+      const result = await register({
+        fullName: values.fullName,
+        email: values.email,
+        password: values.password,
+        role,
+        department: values.department || '',
+        rollNumber: values.rollNumber || '',
+        semester: values.semester || '',
+        subject: values.subject || '',
+        designation: values.designation || '',
+        assignedBatch: values.assignedBatch || '',
       })
 
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Registration failed')
+      if (result.needsEmailConfirmation) {
+        toast({
+          title: "EMAIL_VERIFICATION_REQUIRED",
+          description: "Account created. Check your email to confirm before logging in.",
+        })
+      } else {
+        toast({
+          title: "ACCOUNT_CREATED",
+          description: "Node successfully registered. Redirecting to dashboard.",
+        })
+        router.push(ROLE_ROUTES[role] || "/dashboard")
       }
-
-      toast({
-        title: "ACCOUNT_CREATED",
-        description: "Node successfully registered. Proceed to login.",
-      })
-      
-      router.push("/auth/login")
     } catch (error: any) {
-      console.error("Registration Error:", error)
       toast({
         variant: "destructive",
         title: "REGISTRATION_FAILED",
@@ -155,15 +159,7 @@ export default function RegisterPage() {
             </TabsList>
 
             <div className="mb-6">
-              {role === "student" || role === "admin" ? (
-                <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500 rounded-lg">
-                  <Info className="h-4 w-4" />
-                  <AlertTitle className="text-xs font-bold uppercase tracking-wider">AUTO_APPROVAL_ACTIVE</AlertTitle>
-                  <AlertDescription className="text-[10px] opacity-80 uppercase font-mono">
-                    Direct access granted upon verification.
-                  </AlertDescription>
-                </Alert>
-              ) : (
+              {role === "student" || role === "admin" ? null : (
                 <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-500 rounded-lg">
                   <Info className="h-4 w-4" />
                   <AlertTitle className="text-xs font-bold uppercase tracking-wider">VALIDATION_REQUIRED</AlertTitle>
@@ -186,9 +182,10 @@ export default function RegisterPage() {
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">College Email</FormLabel>
-                      <FormControl><Input {...field} placeholder="user@providence.edu.in" className="bg-secondary/50 border-white/5" /></FormControl>
+                      <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">{role === "admin" ? "Email" : "College Email"}</FormLabel>
+                      <FormControl><Input {...field} placeholder="yourname@student.providence.edu.in" className="bg-secondary/50 border-white/5" /></FormControl>
                       <FormMessage className="text-[10px]" />
+                      {role !== "admin" && <p className="text-[8px] font-mono text-muted-foreground/60">Must end with @student.providence.edu.in</p>}
                     </FormItem>
                   )} />
                 </div>
@@ -249,15 +246,6 @@ export default function RegisterPage() {
                         <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Roll Number</FormLabel>
                         <FormControl><Input {...field} placeholder="e.g. CSE-23-01" className="bg-secondary/50 border-white/5" /></FormControl>
                         <FormMessage className="text-[10px]" />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="semester" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Semester</FormLabel>
-                        <Select onValueChange={field.onChange}>
-                          <FormControl><SelectTrigger className="bg-secondary/50 border-white/5"><SelectValue placeholder="Select Sem" /></SelectTrigger></FormControl>
-                          <SelectContent>{SEMESTERS.map(s => <SelectItem key={s} value={s.toString()} className="text-xs">SEM {s}</SelectItem>)}</SelectContent>
-                        </Select>
                       </FormItem>
                     )} />
                   </div>

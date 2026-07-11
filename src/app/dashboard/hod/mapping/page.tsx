@@ -65,7 +65,7 @@ export default function HODMapping() {
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Badge variant="outline" className="text-[10px] font-mono">SEM_{m.sem}</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono">SEM {m.sem}</Badge>
                   </TableCell>
                   <TableCell className="text-right pr-6">
                     <div className="flex justify-end gap-2">

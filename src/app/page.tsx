@@ -143,8 +143,8 @@ export default function LandingPage() {
           </h1>
 
           <p className="max-w-3xl text-lg md:text-xl text-muted-foreground font-body leading-relaxed mb-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            Next-generation Smart Classroom Infrastructure powered by <span className="text-white font-semibold">RFID automation</span>, 
-            <span className="text-white font-semibold text-glow"> AI-driven occupancy intelligence</span>, and institutional analytics.
+            AI-Powered Smart Classroom Infrastructure for <span className="text-white font-semibold">Automated Attendance</span>, 
+            <span className="text-white font-semibold text-glow"> Occupancy Intelligence</span>, Energy Optimization, and Institutional Analytics.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in fade-in zoom-in duration-1000 delay-300">

@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Search, GraduationCap, Filter, ExternalLink, ShieldCheck, Database, Loader2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,22 +14,48 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-import { useFirestore, useCollection } from "@/firebase"
-import { collection, query, where } from "firebase/firestore"
+import { useAuth } from "@/lib/auth-context"
+
+interface Student {
+  id: string
+  fullName: string
+  rollNumber: string
+  email: string
+  department: string
+  semester: string
+  isApproved: boolean
+}
 
 export default function AdminStudents() {
   const [search, setSearch] = useState("")
-  const db = useFirestore()
+  const [students, setStudents] = useState<Student[]>([])
+  const [loading, setLoading] = useState(true)
+  const { token } = useAuth()
 
-  const studentsQuery = useMemo(() => {
-    if (!db) return null
-    return query(collection(db, "users"), where("role", "==", "student"))
-  }, [db])
+  useEffect(() => {
+    if (!token) return
+    let cancelled = false
 
-  const { data: students, loading } = useCollection(studentsQuery)
+    async function load() {
+      try {
+        const res = await fetch('/api/users?role=student', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error('Failed to load')
+        const data = await res.json()
+        if (!cancelled) setStudents(data.users)
+      } catch {
+        if (!cancelled) setStudents([])
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => { cancelled = true }
+  }, [token])
 
   const filtered = useMemo(() => {
-    if (!students) return []
     return students.filter(s => 
       s.fullName?.toLowerCase().includes(search.toLowerCase()) || 
       s.rollNumber?.toLowerCase().includes(search.toLowerCase()) ||

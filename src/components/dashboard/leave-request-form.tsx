@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -12,9 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Send, Loader2, Calendar as CalendarIcon } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
-import { useUser, useFirestore } from "@/firebase"
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"
-import { FirebaseError } from "firebase/app"
+import { useAuth } from "@/lib/auth-context"
 
 const leaveSchema = z.object({
   startDate: z.string().min(1, "Required"),
@@ -24,8 +21,7 @@ const leaveSchema = z.object({
 
 export function LeaveRequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const db = useFirestore()
-  const { user } = useUser()
+  const { token } = useAuth()
 
   const form = useForm<z.infer<typeof leaveSchema>>({
     resolver: zodResolver(leaveSchema),
@@ -37,21 +33,24 @@ export function LeaveRequestForm() {
   })
 
   async function onSubmit(values: z.infer<typeof leaveSchema>) {
-    if (!db || !user) {
-      toast({ variant: "destructive", title: "FIREBASE_UNINITIALIZED", description: "Database not ready." })
+    if (!token) {
+      toast({ variant: "destructive", title: "AUTH_REQUIRED", description: "Sign in to submit a leave request." })
       return
     }
     setIsSubmitting(true)
     try {
-      await addDoc(collection(db, "leave_requests"), {
-        uid: user.uid,
-        email: user.email,
-        startDate: values.startDate,
-        endDate: values.endDate,
-        reason: values.reason,
-        status: "pending",
-        createdAt: serverTimestamp(),
+      const res = await fetch('/api/leave-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(values),
       })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Request failed' }))
+        throw new Error(err.message || err.error || 'Unknown error')
+      }
       form.reset()
       toast({
         title: "LEAVE_REQUEST_SENT",
@@ -61,7 +60,7 @@ export function LeaveRequestForm() {
       toast({
         variant: "destructive",
         title: "SUBMISSION_FAILED",
-        description: error instanceof FirebaseError ? error.message : "Could not submit leave request.",
+        description: error.message || "Could not submit leave request.",
       })
     } finally {
       setIsSubmitting(false)
