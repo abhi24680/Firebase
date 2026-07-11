@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff, GraduationCap, Users, BookOpen, LayoutDashboard, UserCog } from "lucide-react"
+import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
@@ -39,30 +39,9 @@ const ROLE_ROUTES: Record<string, string> = {
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, demoLogin, logout } = useAuth()
+  const { login, logout } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-
-  const DEMO_ACCOUNTS = [
-    { role: "admin", label: "Admin", icon: LayoutDashboard, name: "Dr. Admin", dept: "CSE", color: "text-red-500", border: "border-red-500/20 hover:border-red-500/40" },
-    { role: "hod", label: "HOD", icon: UserCog, name: "Dr. HOD", dept: "CSE", color: "text-purple-500", border: "border-purple-500/20 hover:border-purple-500/40" },
-    { role: "faculty", label: "Faculty", icon: BookOpen, name: "Dr. Faculty", dept: "CSE", color: "text-blue-500", border: "border-blue-500/20 hover:border-blue-500/40" },
-    { role: "advisor", label: "Advisor", icon: Users, name: "Prof. Advisor", dept: "CSE", color: "text-amber-500", border: "border-amber-500/20 hover:border-amber-500/40" },
-    { role: "student", label: "Student", icon: GraduationCap, name: "Demo Student", dept: "CSE", color: "text-emerald-500", border: "border-emerald-500/20 hover:border-emerald-500/40", roll: "CSE23-099", sem: "3" },
-  ]
-
-  function handleDemoLogin(account: typeof DEMO_ACCOUNTS[number]) {
-    demoLogin({
-      role: account.role,
-      fullName: account.name,
-      email: `${account.role}@demo.edu`,
-      department: account.dept,
-      rollNumber: account.role === "student" ? "CSE23-099" : undefined,
-      semester: account.role === "student" ? "3" : undefined,
-    })
-    toast({ title: `DEMO_MODE_ACTIVE`, description: `Logged in as ${account.label}.` })
-    router.push(`/dashboard/${account.role}`)
-  }
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -179,25 +158,6 @@ export default function LoginPage() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col gap-4 pt-2">
-          <div className="flex items-center gap-4 w-full">
-            <div className="h-px bg-white/5 flex-1" />
-            <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest">Demo Access</span>
-            <div className="h-px bg-white/5 flex-1" />
-          </div>
-          <div className="grid grid-cols-5 gap-2 w-full">
-            {DEMO_ACCOUNTS.map((acc) => (
-              <Button
-                key={acc.role}
-                variant="outline"
-                className={`flex flex-col items-center gap-1 h-auto py-3 px-1 border ${acc.border} hover:bg-white/5`}
-                onClick={() => handleDemoLogin(acc)}
-              >
-                <acc.icon className={`h-4 w-4 ${acc.color}`} />
-                <span className={`text-[8px] uppercase font-bold ${acc.color}`}>{acc.label}</span>
-              </Button>
-            ))}
-          </div>
-
           <div className="flex items-center gap-4 w-full">
             <div className="h-px bg-white/5 flex-1" />
             <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-widest">New Node?</span>
