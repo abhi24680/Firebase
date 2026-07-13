@@ -50,8 +50,8 @@ export default function App() {
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardPage />} />
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="admin/camera" element={<AdminCamera />} />
           <Route path="admin/departments" element={<AdminDepartments />} />

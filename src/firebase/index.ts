@@ -9,8 +9,8 @@ export function initializeFirebase(): { app: FirebaseApp; firestore: Firestore; 
   const firestore = getFirestore(app);
   const auth = getAuth(app);
 
-  if (process.env.NEXT_PUBLIC_USE_EMULATOR === 'true') {
-    const host = process.env.NEXT_PUBLIC_EMULATOR_HOST || 'localhost';
+  if (import.meta.env.VITE_USE_EMULATOR === 'true') {
+    const host = import.meta.env.VITE_EMULATOR_HOST || 'localhost';
     connectFirestoreEmulator(firestore, host, 8080);
     connectAuthEmulator(auth, `http://${host}:9099`, { disableWarnings: true });
   }

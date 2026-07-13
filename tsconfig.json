@@ -19,5 +19,5 @@
     "baseUrl": "."
   },
   "include": ["src"],
-  "exclude": ["node_modules", "src/app/api", "src/lib/auth.ts", "src/lib/with-supabase-route.ts", "server"]
+  "exclude": ["node_modules", "server"]
 }

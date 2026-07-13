@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import usersRouter from './routes/users'
 import roomsRouter from './routes/rooms'
