@@ -19,7 +19,7 @@ interface RealtimeState<T> {
   error: string | null
 }
 
-export function useRealtime<T = any>({ table, event = '*', filter, schema = 'public' }: UseRealtimeOptions) {
+export function useRealtime<T extends { [key: string]: any } = any>({ table, event = '*', filter, schema = 'public' }: UseRealtimeOptions) {
   const [state, setState] = useState<RealtimeState<T>>({ data: [], loading: true, error: null })
 
   useEffect(() => {

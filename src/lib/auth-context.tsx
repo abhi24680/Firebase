@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from './supabase'
 import { Session, User as SupabaseUser } from '@supabase/supabase-js'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 interface User {
   id: string

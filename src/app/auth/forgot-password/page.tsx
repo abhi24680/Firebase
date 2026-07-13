@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowRight, Loader2, MailCheck, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
                 </AlertDescription>
               </Alert>
               <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
-                <Link href="/auth/login">
+                <Link to="/auth/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   BACK TO LOGIN
                 </Link>
@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
                 </Button>
 
                 <Button variant="ghost" className="w-full text-muted-foreground" asChild>
-                  <Link href="/auth/login">
+                  <Link to="/auth/login">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     BACK TO LOGIN
                   </Link>

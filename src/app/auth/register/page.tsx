@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useNavigate } from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -27,7 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowRight, Loader2, Info, Eye, EyeOff } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 
@@ -61,7 +61,7 @@ const ROLE_ROUTES: Record<string, string> = {
 };
 
 export default function RegisterPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState<UserRole>("student")
   const [showPassword, setShowPassword] = useState(false)
@@ -119,7 +119,7 @@ export default function RegisterPage() {
           title: "ACCOUNT_CREATED",
           description: "Node successfully registered. Redirecting to dashboard.",
         })
-        router.push(ROLE_ROUTES[role] || "/dashboard")
+        navigate(ROLE_ROUTES[role] || "/dashboard")
       }
     } catch (error: any) {
       toast({
@@ -260,7 +260,7 @@ export default function RegisterPage() {
         </CardContent>
         <CardFooter className="justify-center border-t border-white/5 py-4 flex flex-col gap-4">
           <p className="text-[10px] text-muted-foreground uppercase font-mono">
-            Already have a node? <Link href="/auth/login" className="text-primary hover:underline font-bold">LOGIN HERE</Link>
+            Already have a node? <Link             to="/auth/login" className="text-primary hover:underline font-bold">LOGIN HERE</Link>
           </p>
         </CardFooter>
       </Card>

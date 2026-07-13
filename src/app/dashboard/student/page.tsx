@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 interface Profile {
   fullName: string

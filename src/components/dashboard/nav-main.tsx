@@ -1,8 +1,7 @@
 
 "use client"
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Link, useLocation } from "react-router-dom"
 import { 
   LayoutDashboard, 
   Users, 
@@ -90,7 +89,7 @@ const NAV_GROUPS: Record<string, NavItem[]> = {
 };
 
 export function NavMain({ role }: NavMainProps) {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
 
   const items = NAV_GROUPS[role] || []
 
@@ -106,7 +105,7 @@ export function NavMain({ role }: NavMainProps) {
             return (
               <SidebarMenuItem key={`${item.url}-${idx}`}>
                 <SidebarMenuButton asChild isActive={isActive}>
-                  <Link href={item.url}>
+                  <Link to={item.url}>
                     <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "")} />
                     <span>{item.title}</span>
                   </Link>
@@ -121,7 +120,7 @@ export function NavMain({ role }: NavMainProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="text-destructive hover:text-destructive hover:bg-destructive/10">
-              <Link href="/auth/login">
+              <Link to="/auth/login">
                 <LogOut className="h-4 w-4" />
                 <span>Terminate Session</span>
               </Link>

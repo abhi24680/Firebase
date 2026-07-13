@@ -14,8 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Search, Bell, Settings, User, ShieldAlert, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
+import { useNavigate, Link, Outlet } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 
@@ -30,12 +29,8 @@ interface Profile {
   semester: string
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const router = useRouter()
+export default function DashboardLayout() {
+  const navigate = useNavigate()
   const { user, token, refresh } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -43,7 +38,7 @@ export default function DashboardLayout({
   useEffect(() => {
     if (loading === false) return
     if (!token) {
-      router.push("/auth/login")
+      navigate("/auth/login")
       return
     }
     let cancelled = false
@@ -57,7 +52,7 @@ export default function DashboardLayout({
         }
         await refresh()
       } catch {
-        if (!cancelled) router.push("/auth/login")
+        if (!cancelled) navigate("/auth/login")
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -65,7 +60,7 @@ export default function DashboardLayout({
 
     load()
     return () => { cancelled = true }
-  }, [token, user, router, refresh, loading])
+  }, [token, user, navigate, refresh, loading])
 
   const role = profile?.role || 'student'
   const isApproved = profile?.isApproved || role === 'admin'
@@ -151,7 +146,7 @@ export default function DashboardLayout({
               Simulate {role === 'hod' ? 'Admin' : 'HOD'} Approval
             </Button>
             <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
-              <Link href="/auth/login">
+              <Link to="/auth/login">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Return to Terminal
               </Link>
@@ -217,7 +212,7 @@ export default function DashboardLayout({
           </header>
 
           <div className="flex-1 overflow-y-auto p-8 bg-background scrollbar-thin scrollbar-thumb-sidebar-border">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

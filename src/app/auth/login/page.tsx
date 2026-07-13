@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useNavigate } from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { ShieldCheck, ArrowRight, Loader2, UserPlus, Eye, EyeOff } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 
@@ -38,7 +38,7 @@ const ROLE_ROUTES: Record<string, string> = {
 };
 
 export default function LoginPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { login, logout } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -67,7 +67,7 @@ export default function LoginPage() {
         title: "AUTH_SUCCESS",
         description: `Session initialized as ${userData?.role?.toUpperCase()}.`,
       })
-      router.push(ROLE_ROUTES[userData?.role] || "/dashboard")
+      navigate(ROLE_ROUTES[userData?.role] || "/dashboard")
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -139,7 +139,7 @@ export default function LoginPage() {
               />
 
               <div className="flex justify-end">
-                <Link href="/auth/forgot-password" className="text-[10px] text-muted-foreground hover:text-primary uppercase font-mono tracking-widest transition-colors">
+                <Link to="/auth/forgot-password" className="text-[10px] text-muted-foreground hover:text-primary uppercase font-mono tracking-widest transition-colors">
                   FORGOT PASSWORD?
                 </Link>
               </div>
@@ -164,7 +164,7 @@ export default function LoginPage() {
             <div className="h-px bg-white/5 flex-1" />
           </div>
           <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
-            <Link href="/auth/register">
+            <Link to="/auth/register">
               <UserPlus className="mr-2 h-4 w-4" />
               REGISTER ACCOUNT
             </Link>

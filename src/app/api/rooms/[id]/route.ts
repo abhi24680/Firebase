@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const GET = withSupabaseRoute({ auth: 'user' }, async (req) => {
   try {
-    const id = req.nextUrl.pathname.split('/').filter(Boolean).pop()
+    const segments = req.nextUrl.pathname.split('/').filter(Boolean)
+    const id = segments[segments.length - 2]
     if (!id) return NextResponse.json({ error: 'Missing room id' }, { status: 400 })
 
     const room = await prisma.room.findUnique({

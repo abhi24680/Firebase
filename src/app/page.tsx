@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Shield, Cpu, Database, ArrowRight, Zap, History, Lightbulb, Rocket, Eye, Target } from "lucide-react"
 import { Logo } from "@/components/logo"
@@ -110,21 +110,21 @@ export default function LandingPage() {
           <Logo size="lg" />
           <nav className="hidden lg:flex items-center gap-10 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             {NAV_ITEMS.map((item) => (
-              <Link 
+                <a 
                 key={item} 
                 href={`#${item.toLowerCase()}`} 
                 className="hover:text-primary transition-all relative group py-2"
               >
                 {item}
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
-              </Link>
+              </a>
             ))}
           </nav>
           <Button 
             className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all rounded-none px-8 font-bold text-xs tracking-tighter shadow-lg hover:shadow-primary/20"
             asChild
           >
-            <Link href="/auth/login">LOGIN TERMINAL</Link>
+            <Link to="/auth/login">LOGIN TERMINAL</Link>
           </Button>
         </div>
       </header>
@@ -149,7 +149,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in fade-in zoom-in duration-1000 delay-300">
             <Button size="lg" className="h-16 px-12 text-sm font-bold bg-primary hover:bg-primary/90 rounded-none shadow-[0_0_30px_rgba(59,130,246,0.4)] group transition-all" asChild>
-              <Link href="/auth/login" className="flex items-center gap-3">
+              <Link to="/auth/login" className="flex items-center gap-3">
                 ENTER DASHBOARD
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
@@ -269,17 +269,17 @@ export default function LandingPage() {
             <div className="space-y-4">
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">System</h4>
               <nav className="flex flex-col gap-2 text-[10px] text-muted-foreground uppercase font-mono">
-                <Link href="#" className="hover:text-primary transition-colors">Nodes</Link>
-                <Link href="#" className="hover:text-primary transition-colors">API Docs</Link>
-                <Link href="#" className="hover:text-primary transition-colors">Latency</Link>
+                <a href="#" className="hover:text-primary transition-colors">Nodes</a>
+                <a href="#" className="hover:text-primary transition-colors">API Docs</a>
+                <a href="#" className="hover:text-primary transition-colors">Latency</a>
               </nav>
             </div>
             <div className="space-y-4">
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">Security</h4>
               <nav className="flex flex-col gap-2 text-[10px] text-muted-foreground uppercase font-mono">
-                <Link href="#" className="hover:text-primary transition-colors">Encrypted</Link>
-                <Link href="#" className="hover:text-primary transition-colors">Auth Node</Link>
-                <Link href="#" className="hover:text-primary transition-colors">Audit</Link>
+                <a href="#" className="hover:text-primary transition-colors">Encrypted</a>
+                <a href="#" className="hover:text-primary transition-colors">Auth Node</a>
+                <a href="#" className="hover:text-primary transition-colors">Audit</a>
               </nav>
             </div>
           </div>

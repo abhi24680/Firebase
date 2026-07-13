@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useNavigate } from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -57,7 +57,7 @@ const registrationSchema = z.object({
 })
 
 export default function AdminRegister() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [successUid, setSuccessUid] = useState<string | null>(null)

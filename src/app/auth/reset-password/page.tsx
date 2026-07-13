@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useNavigate } from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowRight, Loader2, CheckCircle2, Eye, EyeOff } from "lucide-react"
-import Link from "next/link"
+import { Link } from "react-router-dom"
 import { toast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 
@@ -32,7 +32,7 @@ const schema = z.object({
 })
 
 export default function ResetPasswordPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [done, setDone] = useState(false)
@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
           </CardHeader>
           <CardContent>
             <Button variant="outline" className="w-full border-white/5 hover:bg-white/5" asChild>
-              <Link href="/auth/forgot-password">REQUEST NEW LINK</Link>
+              <Link to="/auth/forgot-password">REQUEST NEW LINK</Link>
             </Button>
           </CardContent>
         </Card>
@@ -116,7 +116,7 @@ export default function ResetPasswordPage() {
                   Password updated successfully.
                 </AlertDescription>
               </Alert>
-              <Button className="w-full h-11 font-bold shadow-lg shadow-primary/20" onClick={() => router.push("/auth/login")}>
+              <Button className="w-full h-11 font-bold shadow-lg shadow-primary/20" onClick={() => navigate("/auth/login")}>
                 PROCEED TO LOGIN <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>

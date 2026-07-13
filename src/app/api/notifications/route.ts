@@ -2,14 +2,14 @@ import { withSupabaseRoute } from '@/lib/with-supabase-route'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const GET = withSupabaseRoute({ auth: 'user' }, async (req) => {
+export const GET = withSupabaseRoute({ auth: 'user' }, async (req, ctx) => {
   try {
     const { searchParams } = new URL(req.url)
     const type = searchParams.get('type')
     const unreadOnly = searchParams.get('unread') === 'true'
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    const profile = await prisma.user.findUnique({ where: { authUid: (req as any).ctx?.userClaims?.id } })
+    const profile = await prisma.user.findUnique({ where: { authUid: ctx.userClaims?.id } })
     if (!profile) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
     const where: any = { userId: profile.id }
@@ -59,13 +59,13 @@ export const POST = withSupabaseRoute({ auth: 'user' }, async (req) => {
   }
 })
 
-export const PATCH = withSupabaseRoute({ auth: 'user' }, async (req) => {
+export const PATCH = withSupabaseRoute({ auth: 'user' }, async (req, ctx) => {
   try {
     const body = await req.json()
     const { id, readAll } = body
 
     if (readAll) {
-      const profile = await prisma.user.findUnique({ where: { authUid: (req as any).ctx?.userClaims?.id } })
+      const profile = await prisma.user.findUnique({ where: { authUid: ctx.userClaims?.id } })
       if (!profile) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
       await prisma.notification.updateMany({
